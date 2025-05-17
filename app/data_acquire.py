@@ -1,10 +1,9 @@
-#Author: Isaac Lucas de Lima Yuki
-#Date: 2023-10-05
+#Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
 #Descritpion: This module contains a class for acquiring data from the serial port for this specific application.
 
 import serial
 
-class DataAcquirer:
+class SerialPort:
     def __init__(self, port='COM3', baudrate=115200):
         self.port = port
         self.baudrate = baudrate
@@ -27,7 +26,7 @@ class DataAcquirer:
         """Read raw data string from serial until end marker is found."""
         dataStr = ""
         while not ('\\r\\n' in dataStr):
-            dataByte = self.ser.read(self.ser.inWaiting())
+            dataByte = self.serialConnection.read(self.serialConnection.inWaiting())
             if len(dataByte) > 0:
                 dataStr += str(dataByte).split("'")[1]
         return dataStr
@@ -39,3 +38,10 @@ class DataAcquirer:
     
     def __del__(self):
         self.disconnect()
+
+class FileHandler:
+
+    def readFile(self, file_path: str) -> list:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+        return lines
