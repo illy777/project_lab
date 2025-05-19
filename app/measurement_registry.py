@@ -15,7 +15,7 @@ class Measurement(DataPipeline):
             raise ValueError(f"Invalid meshtype: {self.meshtype}")
         self._choose_measurement(n_el, h0, maxArea)
         if not callable(self.measurement.do_measurement):
-            raise ValueError("Measurement method is not callable. Please implement the method do_measurement(self, data:str) in the measurement class.")
+            raise ValueError("Measurement method is not callable. Please implement the method do_measurement(self, data:np.ndarray)-> np.ndarray in the measurement class.")
         
     def _validate_meshtype(self):
         if(self.meshtype not in MESHOPTIONS):
@@ -31,6 +31,7 @@ class Measurement(DataPipeline):
             self._choose_circular(n_el, h0)
         else:
             raise ValueError(f"Unknown meshtype: {self.meshtype}")
-    def do_measurement(self, data:str) -> np.ndarray:
+
+    def do_measurement(self, data:np.ndarray) -> np.ndarray:
         return self.measurement.do_measurement(data)
     
