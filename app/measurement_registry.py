@@ -7,6 +7,7 @@ MESHOPTIONS = ["circular"]
 
 class Measurement():
     def __init__(self, meshtype: str, n_el: int = None, h0: float = None, maxArea: float= None):
+        self.meshoptions = MESHOPTIONS
         self.meshtype = meshtype
         self.mesh = None
         self.measurement = None
