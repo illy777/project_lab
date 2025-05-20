@@ -44,4 +44,5 @@ class FileHandler:
     def readFile(self, file_path: str) -> list:
         with open(file_path, 'r') as file:
             lines = file.readlines()
+        lines = [line.strip() for line in lines if line.strip() and line.strip() != 'n']  # Remove empty lines and lines equal to 'n'
         return lines
