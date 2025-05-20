@@ -31,12 +31,4 @@ class Model:
         else:
             raise ValueError(f"Unknown model name: {model_name}")
 
-class DataPipeline:
-    def __init__(self):
-        self.input : np.ndarray = []
-        self.output : np.ndarray = []
-
-    def load_data(self, source: np.ndarray):
-        self.input = source
-
 

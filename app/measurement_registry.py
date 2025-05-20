@@ -2,11 +2,10 @@
 #Descritpion: This module contains the measurement registry for the EIT system.
 
 from app.circular_mesh import *
-from app.pipeline_skeletton import *
 
 MESHOPTIONS = ["circular"]
 
-class Measurement(DataPipeline):
+class Measurement():
     def __init__(self, meshtype: str, n_el: int = None, h0: float = None, maxArea: float= None):
         self.meshtype = meshtype
         self.mesh = None

@@ -54,9 +54,8 @@ class CircularMeshModel(Model):
         self.load_model("reconstruction", 'app\\models\\model_CNN.keras', load_model)
         self.load_model("denoising", 'app\\models\\model_denoising.keras', load_model)
 
-class CircularMeshPipeline(DataPipeline, CircularMeshModel):
+class CircularMeshPipeline(CircularMeshModel):
     def __init__(self):
-        DataPipeline.__init__(self)
         CircularMeshModel.__init__(self)
         self._validate_region_indices()
 
@@ -109,6 +108,5 @@ class CircularMeshPipeline(DataPipeline, CircularMeshModel):
     def do_measurement(self, data: np.ndarray) -> np.ndarray:
         if not isinstance(data, np.ndarray):
             raise TypeError("data must be a string.")
-        self.load_data(data)
-        ypred = self._run_pipeline(self.input)
+        ypred = self._run_pipeline(data)
         return ypred.flatten()
