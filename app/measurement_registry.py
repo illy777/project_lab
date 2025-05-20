@@ -31,6 +31,10 @@ class Measurement():
             self._choose_circular(n_el, h0)
         else:
             raise ValueError(f"Unknown meshtype: {self.meshtype}")
+        if self.mesh is None:
+            raise ValueError("Mesh object is not initialized. Please check the meshtype and parameters.")
+        if self.measurement is None:
+            raise ValueError("Measurement object is not initialized. Please check the meshtype and parameters.")
 
     def do_measurement(self, data:np.ndarray) -> np.ndarray:
         return self.measurement.do_measurement(data)
