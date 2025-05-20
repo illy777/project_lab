@@ -19,11 +19,11 @@ if __name__ == "__main__":
     interface_adapter = InputAdapter()
 
 
-    data = measurement_interface.readFile("simulation/simulation.txt")
-    data = interface_adapter.parse_data_from_file(data[0])
-    result = measurement.do_measurement(data)
-
-    plotter.eitplot(ds=result, el_pos=measurement.mesh.el_pos, mesh_obj=measurement.mesh.meshObject)
+    data_list = measurement_interface.readFile("simulation/simulation.txt")
     plotter.show()
-    #plotter.start.clicked.connect(object_vaule)
+    for data in data_list:
+        data = interface_adapter.parse_data_from_file(data)
+        data = measurement.do_measurement(data)
+        plotter.eitplot(ds=data, el_pos=measurement.mesh.el_pos, mesh_obj=measurement.mesh.meshObject)
+    #plotter.start.clicked.connect(object_value)
     sys.exit(app.exec_())
