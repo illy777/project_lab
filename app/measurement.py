@@ -16,8 +16,6 @@ class Measurement:
         if not self._validate_meshtype():
             raise ValueError(f"Invalid meshtype: {self.meshtype}")
         self._choose_measurement(n_el, h0, maxArea)
-        if not callable(self.measurement.do_measurement):
-            raise ValueError("Measurement method is not callable. Please implement the method do_measurement(self, data:np.ndarray)-> np.ndarray in the measurement class.")
 
     def _validate_meshtype(self):
         meshtypes = self.registry.get_meshtypes()
@@ -34,6 +32,8 @@ class Measurement:
             raise ValueError("Mesh object is not initialized. Please check the meshtype and parameters.")
         if self.measurement is None:
             raise ValueError("Measurement object is not initialized. Please check the meshtype and parameters.")
+        if not callable(self.measurement.do_measurement):
+            raise ValueError("Measurement method is not callable. Please implement the method do_measurement(self, data:np.ndarray)-> np.ndarray in the measurement class.")
 
     def do_measurement(self, data: np.ndarray) -> np.ndarray:
         return self.measurement.do_measurement(data)
