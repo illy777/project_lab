@@ -4,7 +4,7 @@
 
 
 import numpy as np
-from app.pipeline_skeletton import *
+from pipelines.pipeline_skeletton import *
 from sklearn.preprocessing import MinMaxScaler
 from pyeit.mesh.wrapper import create
 from pyeit.mesh.shape import  circle
@@ -49,10 +49,10 @@ class CircularMeshModel(Model):
         }
     
     def _get_prediction_models(self):
-        self.load_model("compensation", 'app\\models\\gp_model_new_1_0.001.pkl', joblib.load)
-        self.load_model("region", 'app\\models\\knn.pkl', joblib.load)
-        self.load_model("reconstruction", 'app\\models\\model_CNN.keras', load_model)
-        self.load_model("denoising", 'app\\models\\model_denoising.keras', load_model)
+        self.load_model("compensation", 'pipelines\\models\\gp_model_new_1_0.001.pkl', joblib.load)
+        self.load_model("region", 'pipelines\\models\\knn.pkl', joblib.load)
+        self.load_model("reconstruction", 'pipelines\\models\\model_CNN.keras', load_model)
+        self.load_model("denoising", 'pipelines\\models\\model_denoising.keras', load_model)
 
 class CircularMeshPipeline(CircularMeshModel):
     def __init__(self):

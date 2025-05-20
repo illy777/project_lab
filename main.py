@@ -2,7 +2,8 @@
 #Descritpion: This module contains the main application logic for the EIT measurement system.
 
 from app.data_acquire import *
-from app.measurement_registry import *
+from pipelines.registry import *
+from app.measurement import *
 from app.adapters import *
 from gui.plot import *
 from PyQt5.QtWidgets import QApplication
@@ -14,7 +15,10 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     plotter = PLOT()
 
-    measurement = Measurement(meshtype="circular", n_el=8, h0=0.07, maxArea=None)
+    registry = Pipe_Registry()
+    registred_pipes = registry.get_meshtypes()
+
+    measurement = Measurement(meshtype="circular", n_el=8, h0=0.07, maxArea=None, registry=registry)
     measurement_interface = FileHandler()
     interface_adapter = InputAdapter()
 

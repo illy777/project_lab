@@ -1,13 +1,15 @@
 #Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
 #Descritpion: This module contains the measurement registry for the EIT system.
 
-from app.circular_mesh import *
+from pipelines.circular_mesh import *
+from pipelines.registry import *
 
-MESHOPTIONS = ["circular"]
 
-class Measurement():
-    def __init__(self, meshtype: str, n_el: int = None, h0: float = None, maxArea: float= None):
-        self.meshoptions = MESHOPTIONS
+class Measurement:
+    def __init__(self, meshtype: str, n_el: int = None, h0: float = None, maxArea: float = None, registry: Pipe_Registry = None):
+        self.registry = registry
+        if registry is None:
+            raise ValueError("Registry is not provided. Please provide a valid registry.")
         self.meshtype = meshtype
         self.mesh = None
         self.measurement = None
@@ -16,26 +18,23 @@ class Measurement():
         self._choose_measurement(n_el, h0, maxArea)
         if not callable(self.measurement.do_measurement):
             raise ValueError("Measurement method is not callable. Please implement the method do_measurement(self, data:np.ndarray)-> np.ndarray in the measurement class.")
-        
-    def _validate_meshtype(self):
-        if(self.meshtype not in MESHOPTIONS):
-            return False
-        return True
 
-    def _choose_circular(self, n_el: int, h0: float) -> CircularMeshPipeline:
-        self.mesh = CircularMesh(n_el=n_el, h0=h0)
-        self.measurement = CircularMeshPipeline()
+    def _validate_meshtype(self):
+        meshtypes = self.registry.get_meshtypes()
+        return self.meshtype in meshtypes
 
     def _choose_measurement(self, n_el: int, h0: float, maxArea: float):
-        if self.meshtype == "circular":
-            self._choose_circular(n_el, h0)
-        else:
-            raise ValueError(f"Unknown meshtype: {self.meshtype}")
+        for key, choose_func in self.registry.meshoptions.items():
+            if key == self.meshtype:
+                choice = choose_func(n_el, h0, maxArea)
+                self.mesh = choice.mesh
+                self.measurement = choice.measurement
+                break
         if self.mesh is None:
             raise ValueError("Mesh object is not initialized. Please check the meshtype and parameters.")
         if self.measurement is None:
             raise ValueError("Measurement object is not initialized. Please check the meshtype and parameters.")
 
-    def do_measurement(self, data:np.ndarray) -> np.ndarray:
+    def do_measurement(self, data: np.ndarray) -> np.ndarray:
         return self.measurement.do_measurement(data)
     
