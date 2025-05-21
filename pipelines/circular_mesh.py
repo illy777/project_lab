@@ -4,7 +4,7 @@
 
 
 import numpy as np
-from pipelines.pipeline_skeletton import *
+from app.factory import *
 from sklearn.preprocessing import MinMaxScaler
 from pyeit.mesh.wrapper import create
 from pyeit.mesh.shape import  circle

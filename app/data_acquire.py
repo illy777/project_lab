@@ -4,7 +4,7 @@
 import serial
 import numpy as np
 from abc import ABC, abstractmethod
-from pipelines.pipeline_skeletton import Data_Acquirer
+from app.factory import Data_Acquirer
 
 class SerialPort(Data_Acquirer):
     def __init__(self, port='COM3', baudrate=115200):
