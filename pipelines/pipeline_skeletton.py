@@ -3,13 +3,13 @@
 
 import numpy as np
 import os
+from abc import ABC, abstractmethod
 
 class Mesh:
-    def __init__(self, n_el: int = None, h0: float = None, maxArea: float = None):
-        self.numberElectrodes: int = n_el
-        self.h0: float = h0 #here we need a better naming
-        self.maxArea: float = maxArea
-        self.meshObject: dict = None
+    @abstractmethod
+    def generate_mesh(self, **kwargs):
+        """This method should be implemented in the derived class."""
+        pass
 
 class Model:
     def __init__ (self):
@@ -32,3 +32,13 @@ class Model:
             raise ValueError(f"Unknown model name: {model_name}")
 
 
+class Pipeline:
+    def __init__(self, mesh = None):
+        self.mesh = mesh
+        if self.mesh is None:
+            raise ValueError("Mesh is not provided. Please provide a valid mesh.")
+    
+    @abstractmethod
+    def do_measurement(self, data: np.ndarray) -> np.ndarray:
+        """This method should be implemented in the derived class."""
+        pass

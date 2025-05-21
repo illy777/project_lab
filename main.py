@@ -15,10 +15,9 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     plotter = PLOT()
 
-    registry = Pipe_Registry()
-    registred_pipes = registry.get_meshtypes()
+    registred_pipes = Pipeline_Registry().get_meshtypes()
 
-    measurement = Measurement(meshtype="circular", n_el=8, h0=0.07, maxArea=None, registry=registry)
+    pipeline = Pipeline_Builder().build_pipeline(meshtype='circular', n_el=8, h0=0.07, maxArea=None)
     measurement_interface = FileHandler()
     interface_adapter = InputAdapter()
 
@@ -27,7 +26,7 @@ if __name__ == "__main__":
     plotter.show()
     for data in data_list:
         data = interface_adapter.parse_data_from_file(data)
-        data = measurement.do_measurement(data)
-        plotter.eitplot(ds=data, el_pos=measurement.mesh.el_pos, mesh_obj=measurement.mesh.meshObject)
+        data = pipeline.do_measurement(data)
+        plotter.eitplot(ds=data, el_pos=pipeline.mesh.el_pos, mesh_obj=pipeline.mesh.meshObject)
     #plotter.start.clicked.connect(object_value)
     sys.exit(app.exec_())

@@ -12,16 +12,10 @@ from keras.models import load_model
 import joblib
 
 class CircularMesh(Mesh):
-    def __init__(self, **kwargs):
-        self.create_mesh(**kwargs)
-    def create_mesh(self, **kwargs):
-        if( "n_el" not in kwargs):
-            raise ValueError("numberElectrodes is not set")
-        if( "h0" not in kwargs):
-            raise ValueError("h0 is not set")
-        self.numberElectrodes = kwargs["n_el"]
-        self.h0 = kwargs["h0"]
-        meshObject, el_pos =  create(fd=circle, n_el=self.numberElectrodes, h0=self.h0)
+    def __init__(self, n_el: int =None, h0 : float=None, *args):
+        self.generate_mesh(n_el=n_el, h0=h0)
+    def generate_mesh(self, **kwargs):
+        meshObject, el_pos =  create(fd=circle, n_el=kwargs['n_el'], h0=kwargs['h0'])
         self.meshObject = meshObject
         self.el_pos = el_pos
         return self.meshObject
@@ -54,9 +48,10 @@ class CircularMeshModel(Model):
         self.load_model("reconstruction", 'pipelines\\models\\model_CNN.keras', load_model)
         self.load_model("denoising", 'pipelines\\models\\model_denoising.keras', load_model)
 
-class CircularMeshPipeline(CircularMeshModel):
-    def __init__(self):
+class CircularMeshPipeline(Pipeline, CircularMeshModel):
+    def __init__(self, **kwargs):
         CircularMeshModel.__init__(self)
+        Pipeline.__init__(self, CircularMesh(**kwargs))
         self._validate_region_indices()
 
     def _validate_region_indices(self):
