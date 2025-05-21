@@ -48,41 +48,41 @@ class CircularMeshModel(Model):
         self.load_model("reconstruction", 'pipelines\\models\\model_CNN.keras', load_model)
         self.load_model("denoising", 'pipelines\\models\\model_denoising.keras', load_model)
 
-class CircularMeshPipeline(Pipeline, CircularMeshModel):
+class CircularMeshPipeline(Pipeline):
     def __init__(self, **kwargs):
-        CircularMeshModel.__init__(self)
+        self.model = CircularMeshModel()
         Pipeline.__init__(self, CircularMesh(**kwargs))
         self._validate_region_indices()
 
     def _validate_region_indices(self):
         required_keys = [0, 1, 2, 3, 4, 5]
         for key in required_keys:
-            if key not in self.region_indices:
+            if key not in self.model.region_indices:
                 raise ValueError(f"region_indices is missing required key: {key}")
-            if not isinstance(self.region_indices[key], list):
+            if not isinstance(self.model.region_indices[key], list):
                 raise TypeError(f"region_indices[{key}] must be a list of indices")
-            if not all(isinstance(i, int) for i in self.region_indices[key]):
+            if not all(isinstance(i, int) for i in self.model.region_indices[key]):
                 raise TypeError(f"All elements in region_indices[{key}] must be integers")
     
     def _apply_compensation(self, v):
         """Apply compensation model to input vector."""
         v = np.expand_dims(np.array(v), 0)
-        error, _ = self.compensation_model.predict(v, return_std=True)
+        error, _ = self.model.compensation_model.predict(v, return_std=True)
         return v - error
 
     def _predict_region(self, v):
         """Predict anomaly region index."""
-        position = self.region_model.predict(v.reshape(1, -1))[0]
+        position = self.model.region_model.predict(v.reshape(1, -1))[0]
         print('position of anomaly', position + 1)
         return position
 
     def _denoise_prediction(self, ypred, position):
         """Denoise the prediction for the given region."""
-        region_indices = self.region_indices[position]
+        region_indices = self.model.region_indices[position]
         region_values = [ypred[0][j] for j in region_indices]
-        padding_length = self.desired_length - len(region_values)
+        padding_length = self.model.desired_length - len(region_values)
         padded_values = region_values + [0] * padding_length
-        noise = self.denoising_model.predict(np.expand_dims(padded_values, 0), verbose=0)
+        noise = self.model.denoising_model.predict(np.expand_dims(padded_values, 0), verbose=0)
         noise = np.squeeze(noise, 0)
         for idx, mesh_idx in enumerate(region_indices):
             ypred[0][mesh_idx] = noise[idx]
@@ -96,7 +96,7 @@ class CircularMeshPipeline(Pipeline, CircularMeshModel):
         minmax_scaler = MinMaxScaler(feature_range=(0, 1)).fit(v.T)
         v_scaled = minmax_scaler.transform(v.T).T
         v_nn = v_scaled.reshape(1, 40, 1)
-        ypred = self.reconstruction_model.predict(v_nn, verbose=0)
+        ypred = self.model.reconstruction_model.predict(v_nn, verbose=0)
         ypred = self._denoise_prediction(ypred, position)
         return ypred
 
