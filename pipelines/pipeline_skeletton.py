@@ -31,14 +31,27 @@ class Model:
         else:
             raise ValueError(f"Unknown model name: {model_name}")
 
-
-class Pipeline:
-    def __init__(self, mesh = None):
-        self.mesh = mesh
-        if self.mesh is None:
-            raise ValueError("Mesh is not provided. Please provide a valid mesh.")
-    
+class Data_Acquirer(ABC):
     @abstractmethod
-    def do_measurement(self, data: np.ndarray) -> np.ndarray:
+    def acquire_data(self) -> np.ndarray:
         """This method should be implemented in the derived class."""
         pass
+
+class Pipeline:
+    def __init__(self, mesh):
+        self.mesh = mesh
+        self.data_interface = None
+    
+    @abstractmethod
+    def evaluate_data(self, data: np.ndarray) -> np.ndarray:
+        """This method should be implemented in the derived class."""
+        pass
+    
+    def do_measurement(self) -> np.ndarray:
+        data = self.data_interface.acquire_data()
+        return self.evaluate_data(data)
+    
+    def set_data_interface(self, data_interface: Data_Acquirer):
+        if data_interface is None:
+            raise ValueError("Data interface is not set. Please set the data interface before using it.")
+        self.data_interface = data_interface

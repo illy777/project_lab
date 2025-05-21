@@ -3,8 +3,7 @@
 
 from app.data_acquire import *
 from pipelines.registry import *
-from app.measurement import *
-from app.adapters import *
+from app.builder import *
 from gui.plot import *
 from PyQt5.QtWidgets import QApplication
 import sys
@@ -16,17 +15,12 @@ if __name__ == "__main__":
     plotter = PLOT()
 
     registred_pipes = Pipeline_Registry().get_meshtypes()
+    data_interface = FileHandler("simulation/simulation.txt")
+    pipeline = Pipeline_Builder().build_pipeline(meshtype='circular', n_el=8, h0=0.07, maxArea=None, data_interface=data_interface)
 
-    pipeline = Pipeline_Builder().build_pipeline(meshtype='circular', n_el=8, h0=0.07, maxArea=None)
-    measurement_interface = FileHandler()
-    interface_adapter = InputAdapter()
-
-
-    data_list = measurement_interface.readFile("simulation/simulation.txt")
     plotter.show()
-    for data in data_list:
-        data = interface_adapter.parse_data_from_file(data)
-        data = pipeline.do_measurement(data)
+    while True:
+        data = pipeline.do_measurement()
         plotter.eitplot(ds=data, el_pos=pipeline.mesh.el_pos, mesh_obj=pipeline.mesh.meshObject)
     #plotter.start.clicked.connect(object_value)
     sys.exit(app.exec_())

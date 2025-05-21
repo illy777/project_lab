@@ -1,9 +1,14 @@
 #Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
 #Descritpion: This module contains the measurement registry for the EIT system.
 
+from enum import Enum
+from app.data_acquire import FileHandler, SerialPort
 from pipelines.circular_mesh import *
 from pipelines.registry import *
 
+class DataSource(Enum):
+    FILE = 1
+    SERIAL = 2
 
 class Pipeline_Builder:
     def __init__(self):
@@ -16,11 +21,12 @@ class Pipeline_Builder:
         if meshtype not in meshtypes:
             raise ValueError(f"Invalid meshtype: {meshtype}. Available meshtypes are: {meshtypes}")
 
-    def build_pipeline(self, meshtype: str, n_el: int, h0: float, maxArea: float):
+    def build_pipeline(self, meshtype: str, n_el: int, h0: float, maxArea: float, data_interface: Data_Acquirer) -> Pipeline:
         self._validate_meshtype(meshtype)
         for key, choose_func in self.registry.meshoptions.items():
             if key == meshtype:
                 pipeline = choose_func(n_el, h0, maxArea)
+                pipeline.set_data_interface(data_interface)
                 break
         if pipeline is None:
             raise ValueError("Measurement object is not initialized. Please check the meshtype and parameters.")

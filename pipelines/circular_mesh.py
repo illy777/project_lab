@@ -100,7 +100,7 @@ class CircularMeshPipeline(Pipeline):
         ypred = self._denoise_prediction(ypred, position)
         return ypred
 
-    def do_measurement(self, data: np.ndarray) -> np.ndarray:
+    def evaluate_data(self, data: np.ndarray) -> np.ndarray:
         if not isinstance(data, np.ndarray):
             raise TypeError("data must be a string.")
         ypred = self._run_pipeline(data)
