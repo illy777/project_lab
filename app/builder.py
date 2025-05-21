@@ -1,14 +1,8 @@
 #Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
 #Descritpion: This module contains the measurement registry for the EIT system.
 
-from enum import Enum
-from app.data_acquire import FileHandler, SerialPort
 from pipelines.circular_mesh import *
 from pipelines.registry import *
-
-class DataSource(Enum):
-    FILE = 1
-    SERIAL = 2
 
 class Pipeline_Builder:
     def __init__(self):
