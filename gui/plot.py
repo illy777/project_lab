@@ -29,9 +29,9 @@ class PLOT(QDialog):
 
     def eitplot(self, ds=[], mesh_obj=None, el_pos=None):
             
-            pts = mesh_obj['node']
-            tri = mesh_obj['element']
-            perm0 = mesh_obj['perm']
+            pts = mesh_obj.node
+            tri = mesh_obj.element
+            perm0 = mesh_obj.perm
             x, y = pts[:, 0], pts[:, 1]
 
             self.ax1.cla()

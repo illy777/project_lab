@@ -14,9 +14,10 @@ class CircularMesh(Mesh):
     def __init__(self, n_el: int =None, h0 : float=None, *args):
         self.generate_mesh(n_el=n_el, h0=h0)
     def generate_mesh(self, **kwargs):
-        meshObject, el_pos =  create(fd=circle, n_el=kwargs['n_el'], h0=kwargs['h0'])
+        meshObject = create(fd=circle, n_el=kwargs['n_el'], h0=kwargs['h0'])
         self.meshObject = meshObject
-        self.el_pos = el_pos
+        # If you need el_pos, check if meshObject has an attribute for it, e.g. meshObject.el_pos
+        self.el_pos = meshObject.el_pos
         return self.meshObject
 
 class CircularMeshModel(Model):
@@ -86,21 +87,24 @@ class CircularMeshPipeline(Pipeline):
         for idx, mesh_idx in enumerate(region_indices):
             ypred[0][mesh_idx] = noise[idx]
         return ypred
-
+    
+    
+    #Added return anomaly position to show on gui
     def _run_pipeline(self, v):
         """Full measurement pipeline: compensation, region, reconstruction, denoising."""
         v = self._apply_compensation(v)
-        position = self._predict_region(v)
+        anomaly_position = self._predict_region(v)
         v = v.reshape(1, -1)
         minmax_scaler = MinMaxScaler(feature_range=(0, 1)).fit(v.T)
         v_scaled = minmax_scaler.transform(v.T).T
         v_nn = v_scaled.reshape(1, 40, 1)
         ypred = self.model.reconstruction_model.predict(v_nn, verbose=0)
-        ypred = self._denoise_prediction(ypred, position)
-        return ypred
+        ypred = self._denoise_prediction(ypred, anomaly_position)
+        return ypred, anomaly_position
 
+    #Add return anomaly position to show on gui and data to plot voltage graph
     def evaluate_data(self, data: np.ndarray) -> np.ndarray:
         if not isinstance(data, np.ndarray):
             raise TypeError("data must be a string.")
-        ypred = self._run_pipeline(data)
-        return ypred.flatten()
+        ypred, anomaly_position = self._run_pipeline(data)
+        return ypred.flatten(), anomaly_position, data

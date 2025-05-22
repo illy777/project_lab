@@ -1,25 +1,25 @@
-from gui.heatmap_display import HeatmapDisplay
-from gui.real_time_plot import RealTimePlot
-
 import time
+import threading
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout,
     QLabel, QComboBox, QSpinBox, QLineEdit, QTextEdit, QSplitter, QFrame
 )
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter, QPixmap
+from app.builder import Pipeline_Builder
 from gui.heatmap_display import HeatmapDisplay
 from gui.real_time_plot import RealTimePlot
 from app.data_acquire import *
-from app.measurement_registry import *
-from app.adapters import *
+from pipelines.circular_mesh import *
 
 # Main application class
-class Visualizer(QWidget):
-    def __init__(self):
+class Gui(QWidget):
+    def __init__(self, mesh_types=None):
         super().__init__()
+        self.mesh_types = mesh_types or []
         self.setWindowTitle("PyEIT_Thorax GUI")
 
-        # Apply custom stylesheet
+        # Remove background-image from stylesheet, keep only colors for widgets
         self.setStyleSheet("""
             QWidget {
                 background-color: #0b0f0f;
@@ -28,14 +28,15 @@ class Visualizer(QWidget):
             }
             QLabel {
                 color: #80ffc2;
+                background-color: #000000;
             }
             QComboBox, QSpinBox, QLineEdit {
-                background-color: #0b1c1c;
+                background-color: #000000;
                 border: 1px solid #00cc88;
                 color: #00ffcc;
             }
             QPushButton {
-                background-color: #003f3f;
+                background-color: #000000;
                 border: 1px solid #00ffaa;
                 color: #00ffcc;
             }
@@ -43,13 +44,21 @@ class Visualizer(QWidget):
                 background-color: #005f5f;
             }
             QTextEdit {
-                background-color: #0b1c1c;
+                background-color: #000000;
                 border: 1px solid #00cc88;
                 color: #00ffcc;
             }
         """)
 
+        self.background_pixmap = QPixmap("/Users/omerfarukkanmaz/Desktop/Uni/project_lab/project_lab/gui/background.png")
         self.setup_ui()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        if not self.background_pixmap.isNull():
+            # Scale the pixmap to widget size
+            painter.drawPixmap(self.rect(), self.background_pixmap)
+        super().paintEvent(event)
 
     def setup_ui(self):
         main_layout = QHBoxLayout(self)
@@ -61,7 +70,7 @@ class Visualizer(QWidget):
 
         sidebar.addWidget(QLabel("Mesh Type"))
         self.mesh_type = QComboBox()
-        self.mesh_type.addItems(["Circular", "Forearm", "Lung"])
+        self.mesh_type.addItems(self.mesh_types)
         sidebar.addWidget(self.mesh_type)
 
          # Area input for Lung mesh type only
@@ -109,18 +118,20 @@ class Visualizer(QWidget):
         sidebar.addWidget(self.algorithm_select)
 
         sidebar.addWidget(QLabel("Number of Electrodes"))
-        self.current_electrodes = QComboBox()
-        self.current_electrodes.addItems(["8", "16"])
-        sidebar.addWidget(self.current_electrodes)
+        self.num_electrodes = QComboBox()
+        self.num_electrodes.addItems(["8", "16"])
+        sidebar.addWidget(self.num_electrodes)
 
         sidebar.addWidget(QLabel("Injection Pattern"))
         self.pattern_select = QComboBox()
-        self.pattern_select.addItems(["adjacent", "opposite", "skip3", "radial"])
+        self.pattern_select.addItems(["Adjacent", "Opposite", "Skip-3", "Radial"])
         sidebar.addWidget(self.pattern_select)
 
         self.run_button = QPushButton("Start Visualization")
-        self.run_button.clicked.connect(self.run_visualization)
+        self.run_button.setCheckable(True)
+        self.run_button.clicked.connect(self.toggle_visualization)
         sidebar.addWidget(self.run_button)
+
 
         # Main area for visual output
         main_area = QVBoxLayout()
@@ -132,18 +143,24 @@ class Visualizer(QWidget):
         # Horizontal layout with heatmap and plot
         visual_row = QHBoxLayout()
         self.heatmap_display = HeatmapDisplay()
-        visual_row.addWidget(self.heatmap_display)
+        self.heatmap_display.setMinimumHeight(350)
+        self.heatmap_display.setMinimumWidth(350)
+        visual_row.addWidget(self.heatmap_display, stretch=2)
         self.plot_canvas = RealTimePlot()
-        visual_row.addWidget(self.plot_canvas)
+        self.plot_canvas.setMinimumHeight(350)
+        self.plot_canvas.setMinimumWidth(350)
+        visual_row.addWidget(self.plot_canvas, stretch=2)
         main_area.addLayout(visual_row)
 
-        # Anomaly detection log
+        # Anomaly detection log (make this area smaller in height)
         anomaly_label = QLabel("Anomaly Detection")
         anomaly_label.setStyleSheet("font-size: 16px; font-weight: bold;")
         main_area.addWidget(anomaly_label)
 
         self.visual_output = QTextEdit()
         self.visual_output.setReadOnly(True)
+        # Reduce the height of anomaly detection area
+        self.visual_output.setFixedHeight(200)  # Smaller height for anomaly detection log
         main_area.addWidget(self.visual_output)
 
         self.command_line = QLineEdit()
@@ -161,37 +178,53 @@ class Visualizer(QWidget):
         splitter.addWidget(main_widget)
         main_layout.addWidget(splitter)
 
+    def toggle_visualization(self):
+        if self.run_button.isChecked():
+            self.run_button.setText("Visualizing...")
+            # Start visualization in a new thread
+            self.visualization_thread = threading.Thread(target=self.run_visualization, daemon=True)
+            self.visualization_thread.start()
+        else:
+            self.run_button.setText("Start Visualization")
+
     def run_visualization(self):
         self.plot_canvas.paused = False
 
         meshtype = self.get_mesh_type()
         n_el = self.get_n_electrodes()
         h0 = self.get_h0()
-        measurement = Measurement(meshtype, n_el, h0, maxArea=None)
-        measurement_interface = FileHandler()
-        interface_adapter = InputAdapter()
-        data = measurement_interface.readFile("simulation/simulation.txt")
-        data_parsed = interface_adapter.parse_data_from_file(data[0])
-        result = measurement.do_measurement(data_parsed)
-        self.heatmap_display.update_heatmap(ds=result, el_pos=measurement.mesh.el_pos, mesh_obj=measurement.mesh.meshObject)
-        self.heatmap_display.show()
+
+        data_interface = FileHandler("simulation/simulation.txt")
+        print(f"Data interface: {data_interface}")
+        pipeline = Pipeline_Builder().build_pipeline(meshtype, n_el, h0, maxArea=None, data_interface=data_interface)       
+
+        self.log_message(f"""[INFO] Visualization started with parameters:
+        Mesh: {self.mesh_type.currentText()}
+        h0: {self.h0_input.text()}
+        Input Electrodes: {self.input_electrodes.value()}
+        Number of Electrodes: {self.num_electrodes.currentText()}
+        Pattern: {self.pattern_select.currentText()}""")
+       
+
+        loop_count = 0
+        while self.run_button.isChecked():
+            data, anomaly_position, voltages = pipeline.do_measurement()
+            self.heatmap_display.update_heatmap_opencv(ds=data, el_pos=pipeline.mesh.el_pos, mesh_obj=pipeline.mesh.meshObject)
+            self.heatmap_display.show()
+
+            try:
+                self.plot_canvas.set_voltage_data_from_file(voltages)
+            except Exception as e:
+                self.log_message(f"[ERROR] Could not update Voltage vs. Time plot: {e}")
+            if loop_count % 3 == 0:
+                self.log_message(f"Predicted anomaly region: {anomaly_position}") #show predicted region every 3 iterations
+            loop_count += 1
 
         # --- NEW: Update the real-time plot with voltage data from file ---
-        try:
-            self.plot_canvas.set_voltage_data_from_file(data)
-        except Exception as e:
-            self.log_message(f"[ERROR] Could not update Voltage vs. Time plot: {e}")
-
+        
+       
+        
         #self.log_message(f"Pattern:",measurement.measurement._predict_region(result))
-
-        self.log_message("[INFO] Visualization started with parameters:")
-        self.log_message(f"Mesh: {self.mesh_type.currentText()}")
-        self.log_message(f"h0: {self.h0_input.text()}")
-        self.log_message(f"Area: {self.area_input.text()}")
-        self.log_message(f"Electrodes: {self.input_electrodes.value()}")
-        self.log_message(f"Algorithm: {self.algorithm_select.currentText()}")
-        self.log_message(f"Current Electrodes: {self.current_electrodes.currentText()}")
-        self.log_message(f"Pattern: {self.pattern_select.currentText()}")
 
     def handle_command(self):
         command = self.command_line.text().strip()
@@ -216,7 +249,7 @@ class Visualizer(QWidget):
         return self.mesh_type.currentText().lower()
     
     def get_n_electrodes(self):
-        return int(self.current_electrodes.currentText())
+        return int(self.num_electrodes.currentText())
     
     def get_h0(self):
         try:
