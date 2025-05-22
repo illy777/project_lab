@@ -18,8 +18,13 @@ class Model:
         self.reconstruction_model = None
         self.denoising_model = None
 
-    def load_model(self, model_name: str, model_path: str, load_function: callable):
-        path = os.path.join(os.getcwd(), model_path)
+    def load_model(self, model_name: str, model_file: str, load_function: callable):
+        path = os.path.join(os.getcwd(),"pipelines","models")
+        if not os.path.exists(path):
+            os.makedirs(path)
+        path = os.path.join(path, model_file)
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Model file {model_file} not found in {path}.")
         if model_name == "compensation":
             self.compensation_model = load_function(path)
         elif model_name == "region":
