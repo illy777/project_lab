@@ -2,3 +2,5 @@
 /build
 */__pycache__
 /pyeit
+pipelines/models/gp_model_new_1_0.001.pkl
+pipelines/models
