@@ -43,10 +43,10 @@ class CircularMeshModel(Model):
         }
     
     def _get_prediction_models(self):
-        self.load_model("compensation", 'pipelines\\models\\gp_model_new_1_0.001.pkl', joblib.load)
-        self.load_model("region", 'pipelines\\models\\knn.pkl', joblib.load)
-        self.load_model("reconstruction", 'pipelines\\models\\model_CNN.keras', load_model)
-        self.load_model("denoising", 'pipelines\\models\\model_denoising.keras', load_model)
+        self.load_model("compensation", 'gp_model_new_1_0.001.pkl', joblib.load)
+        self.load_model("region", 'knn.pkl', joblib.load)
+        self.load_model("reconstruction", 'model_CNN.keras', load_model)
+        self.load_model("denoising", 'model_denoising.keras', load_model)
 
 class CircularMeshPipeline(Pipeline):
     def __init__(self, **kwargs):
