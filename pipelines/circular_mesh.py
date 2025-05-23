@@ -1,6 +1,5 @@
-#Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
-#Descritpion: This module is a part of the application that handles the circular mesh generation and data processing pipeline.
-#It relies on the framework in the data_processing module.
+# Descritpion: This module is a part of the application that handles the circular mesh generation and data processing pipeline.
+# It relies on the framework in the data_processing module.
 
 
 import numpy as np
@@ -73,7 +72,7 @@ class CircularMeshPipeline(Pipeline):
     def _predict_region(self, v):
         """Predict anomaly region index."""
         position = self.model.region_model.predict(v.reshape(1, -1))[0]
-        print('position of anomaly', position + 1)
+        self.set_anomaly_position(position + 1)
         return position
 
     def _denoise_prediction(self, ypred, position):

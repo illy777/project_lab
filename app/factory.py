@@ -1,5 +1,8 @@
-#Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
-#Descritpion: This module contains the foundation for the data pipeline, including the mesh generation and model loading.
+# Copyright (c) 2025 
+# SPDX-License-Identifier: MIT
+# Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
+#
+# Descritpion: This module contains the foundation for the data pipeline, including the mesh generation and model loading.
 
 import numpy as np
 import os
@@ -45,18 +48,34 @@ class Data_Acquirer(ABC):
 class Pipeline:
     def __init__(self, mesh):
         self.mesh = mesh
-        self.data_interface = None
-    
+        self._data_interface = None
+        self._anomaly_position = None
+        self._raw_data = None
+
     @abstractmethod
     def evaluate_data(self, data: np.ndarray) -> np.ndarray:
         """This method should be implemented in the derived class."""
         pass
     
     def do_measurement(self) -> np.ndarray:
-        data = self.data_interface.acquire_data()
+        data = self._data_interface.acquire_data()
+        self._raw_data = data
         return self.evaluate_data(data)
     
+    def set_anomaly_position(self, position: int):
+        self._anomaly_position = position
+
+    def get_anomaly_position(self) -> int:
+        if self._anomaly_position is None:
+            raise Warning("Anomaly position was none.")
+        return self._anomaly_position
+
+    def get_raw_data(self) -> np.ndarray:
+        if self._raw_data is None:
+            raise Warning("Raw data is none.")
+        return self._raw_data
+
     def set_data_interface(self, data_interface: Data_Acquirer):
         if data_interface is None:
             raise ValueError("Data interface is not set. Please set the data interface before using it.")
-        self.data_interface = data_interface
+        self._data_interface = data_interface
