@@ -2,4 +2,5 @@
 /build
 */__pycache__
 /pyeit
-pipelines/models
+/pipelines/models
+.DS_Store
