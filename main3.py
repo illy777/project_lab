@@ -18,7 +18,30 @@ if __name__ == "__main__":
     gui.resize(1200, 700)
     gui.show()
 
+    meshtype = gui.get_mesh_type()
+    n_el = gui.get_n_electrodes()
+    h0 = gui.get_h0()
 
+    data_interface = FileHandler("simulation/simulation.txt")
+    
+    if gui.run_button.isChecked():
+      pipeline = Pipeline_Builder().build_pipeline(meshtype, n_el, h0, maxArea=None, data_interface=data_interface) 
+      loop_count = 0
+      while gui.run_button.isChecked():
+          data, anomaly_position, voltages = pipeline.do_measurement()
+          gui.heatmap_display.update_heatmap_opencv(ds=data, el_pos=pipeline.mesh.el_pos, mesh_obj=pipeline.mesh.meshObject)
+          gui.heatmap_display.show()
+
+            # --- NEW: Update the real-time plot with voltage data from file ---
+          try:
+              gui.plot_canvas.set_voltage_data_from_file(voltages)
+          except Exception as e:
+              gui.log_message(f"[ERROR] Could not update Voltage vs. Time plot: {e}")
+          if loop_count % 3 == 0:
+              gui.log_message(f"Predicted anomaly region: {anomaly_position}") #show predicted region every 3 iterations
+          loop_count += 1
+
+  
 
     sys.exit(app.exec())
 
