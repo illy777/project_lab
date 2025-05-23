@@ -106,9 +106,9 @@ class Gui(QWidget):
 
 
         sidebar.addWidget(QLabel("Input Electrodes"))
-        self.input_electrodes = QSpinBox()
-        self.input_electrodes.setRange(1, 64)
-        sidebar.addWidget(self.input_electrodes)
+        self.el_pos = QSpinBox()
+        self.el_pos.setRange(1, 64)
+        sidebar.addWidget(self.el_pos)
 
         sidebar.addWidget(QLabel("Algorithm"))
         self.algorithm_select = QComboBox()
@@ -178,9 +178,9 @@ class Gui(QWidget):
     def toggle_visualization(self):
         if self.run_button.isChecked():
             self.run_button.setText("Visualizing...")
-            # Start visualization in a new thread
-            self.visualization_thread = threading.Thread(target=self.run_visualization, daemon=True)
-            self.visualization_thread.start()
+            #self.visualization_thread = threading.Thread(target=self.run_visualization, daemon=True)
+            self.run_visualization()
+            #self.visualization_thread.start()
         else:
             self.run_button.setText("Start Visualization")
 
@@ -188,13 +188,13 @@ class Gui(QWidget):
         self.plot_canvas.paused = False
 
         self.log_message(f"""[INFO] Visualization started with parameters:
-        Mesh: {self.mesh_type.currentText()}
-        h0: {self.h0_input.text()}
-        Input Electrodes: {self.input_electrodes.value()}
-        Number of Electrodes: {self.num_electrodes.currentText()}
-        Pattern: {self.pattern_select.currentText()}""")
+                Mesh: {self.mesh_type.currentText()}
+                h0: {self.h0_input.text()}
+                Input Electrodes: {self.el_pos.value()}
+                Number of Electrodes: {self.num_electrodes.currentText()}
+                Pattern: {self.pattern_select.currentText()}""")
 
-
+                
     def handle_command(self):
         command = self.command_line.text().strip()
         if command.startswith("set "):
@@ -235,5 +235,8 @@ class Gui(QWidget):
             return None
     def get_pattern(self):
         return self.pattern_select.currentText().lower()
+        
     def get_algorithm(self):
         return self.algorithm_select.currentText().lower()
+    def get_el_pos(self):
+        return self.el_pos.value()
