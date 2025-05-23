@@ -1,7 +1,3 @@
-#Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
-#Descritpion: This module contains the GUI for the EIT measurement system, including the plot display.
-
-
 from PyQt5.QtWidgets import QDialog,QApplication,QGridLayout,QPushButton
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas

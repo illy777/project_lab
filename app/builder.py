@@ -1,5 +1,8 @@
-#Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
-#Descritpion: This module contains the measurement registry for the EIT system.
+# Copyright (c) 2025 
+# SPDX-License-Identifier: MIT
+# Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
+#
+# Descritpion: This module contains the measurement registry for the EIT system.
 
 from pipelines.circular_mesh import *
 from pipelines.registry import *

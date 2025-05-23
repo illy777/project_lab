@@ -1,5 +1,8 @@
-#Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
-#Descritpion: This module contains a class for acquiring data from the serial port for this specific application.
+# Copyright (c) 2025 
+# SPDX-License-Identifier: MIT
+# Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
+#
+# Descritpion: This module contains a class for acquiring data from the serial port for this specific application.
 
 import serial
 import numpy as np
