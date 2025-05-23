@@ -6,10 +6,9 @@
 
 import serial
 import numpy as np
-from abc import ABC, abstractmethod
-from app.factory import Data_Acquirer
+from app.overseer import DataAcquirer
 
-class SerialPort(Data_Acquirer):
+class SerialPort(DataAcquirer):
     def __init__(self, port='COM3', baudrate=115200):
         self.port = port
         self.baudrate = baudrate
@@ -44,7 +43,7 @@ class SerialPort(Data_Acquirer):
     def __del__(self):
         self.disconnect()
 
-class FileHandler(Data_Acquirer):
+class FileHandler(DataAcquirer):
 
     def __init__(self, file_path: str):
         self.data = None

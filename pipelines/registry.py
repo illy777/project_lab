@@ -6,12 +6,13 @@
 # It relies on the framework in the data_processing module.
 
 from pipelines.circular_mesh import *
+from app.data_types import MeshType
 
-class Pipeline_Registry():
+class PipelineRegistry():
     def __init__(self):
-        self.meshoptions = {"circular": self._choose_circular}
+        self._meshoptions = {MeshType.circularMesh: self._choose_circular}
 
-    def get_meshtypes(self):
+    def get_meshtypes(self) -> list[MeshType]:
         return list(self.meshoptions.keys())
 
     def _choose_circular(self, n_el: int, h0: float, *args):
