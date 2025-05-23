@@ -1,5 +1,8 @@
-#Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
-#Descritpion: This module contains the foundation for the data pipeline, including the mesh generation and model loading.
+# Copyright (c) 2025 
+# SPDX-License-Identifier: MIT
+# Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
+#
+# Descritpion: This module contains the foundation for the data pipeline, including the mesh generation and model loading.
 
 import numpy as np
 import os

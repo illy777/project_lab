@@ -1,6 +1,5 @@
-#Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
-#Descritpion: This module is a part of the application that handles the circular mesh generation and data processing pipeline.
-#It relies on the framework in the data_processing module.
+# Descritpion: This module is a part of the application that handles the circular mesh generation and data processing pipeline.
+# It relies on the framework in the data_processing module.
 
 
 import numpy as np
