@@ -72,7 +72,7 @@ class CircularMeshPipeline(Pipeline):
     def _predict_region(self, v):
         """Predict anomaly region index."""
         position = self.model.region_model.predict(v.reshape(1, -1))[0]
-        print('position of anomaly', position + 1)
+        self._anomaly_postion = position + 1
         return position
 
     def _denoise_prediction(self, ypred, position):
