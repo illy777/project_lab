@@ -10,7 +10,7 @@ from app.builder import Pipeline_Builder
 from gui.heatmap_display import HeatmapDisplay
 from gui.real_time_plot import RealTimePlot
 from app.data_acquire import *
-from pipelines.circular_mesh import *
+
 
 # Main application class
 class Gui(QWidget):
@@ -105,8 +105,6 @@ class Gui(QWidget):
         on_mesh_type_changed(self.mesh_type.currentIndex())
 
 
-        
-
         sidebar.addWidget(QLabel("Input Electrodes"))
         self.input_electrodes = QSpinBox()
         self.input_electrodes.setRange(1, 64)
@@ -131,7 +129,6 @@ class Gui(QWidget):
         self.run_button.setCheckable(True)
         self.run_button.clicked.connect(self.toggle_visualization)
         sidebar.addWidget(self.run_button)
-
 
         # Main area for visual output
         main_area = QVBoxLayout()
@@ -190,41 +187,13 @@ class Gui(QWidget):
     def run_visualization(self):
         self.plot_canvas.paused = False
 
-        meshtype = self.get_mesh_type()
-        n_el = self.get_n_electrodes()
-        h0 = self.get_h0()
-
-        data_interface = FileHandler("simulation/simulation.txt")
-        print(f"Data interface: {data_interface}")
-        pipeline = Pipeline_Builder().build_pipeline(meshtype, n_el, h0, maxArea=None, data_interface=data_interface)       
-
         self.log_message(f"""[INFO] Visualization started with parameters:
         Mesh: {self.mesh_type.currentText()}
         h0: {self.h0_input.text()}
         Input Electrodes: {self.input_electrodes.value()}
         Number of Electrodes: {self.num_electrodes.currentText()}
         Pattern: {self.pattern_select.currentText()}""")
-       
 
-        loop_count = 0
-        while self.run_button.isChecked():
-            data, anomaly_position, voltages = pipeline.do_measurement()
-            self.heatmap_display.update_heatmap_opencv(ds=data, el_pos=pipeline.mesh.el_pos, mesh_obj=pipeline.mesh.meshObject)
-            self.heatmap_display.show()
-
-            try:
-                self.plot_canvas.set_voltage_data_from_file(voltages)
-            except Exception as e:
-                self.log_message(f"[ERROR] Could not update Voltage vs. Time plot: {e}")
-            if loop_count % 3 == 0:
-                self.log_message(f"Predicted anomaly region: {anomaly_position}") #show predicted region every 3 iterations
-            loop_count += 1
-
-        # --- NEW: Update the real-time plot with voltage data from file ---
-        
-       
-        
-        #self.log_message(f"Pattern:",measurement.measurement._predict_region(result))
 
     def handle_command(self):
         command = self.command_line.text().strip()
