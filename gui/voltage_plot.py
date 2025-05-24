@@ -1,10 +1,17 @@
-import numpy as np
+# Copyright (c) 2025 
+# SPDX-License-Identifier: MIT
+# Author: Ömer Faruk KANMAZ <kanmazomerfaruk@outlook.com>
+#
+# Descritpion: This module is the real-time voltage plot widget for the EIT system 
+# Module using PyQt6 and matplotlib for rendering.
+
 from PyQt6.QtCore import QTimer
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+import numpy as np
 
 # Real-time plot widget using matplotlib
-class RealTimePlot(FigureCanvas):
+class VoltagePlot(FigureCanvas):
     def __init__(self, parent=None):
         # Set up the matplotlib figure and axis
         fig = Figure(figsize=(5, 3), dpi=100, facecolor='black')
@@ -42,8 +49,7 @@ class RealTimePlot(FigureCanvas):
 
         self.paused = True  # Start in paused state
 
-    def set_voltage_data_from_file(self, voltages):
-        # Accept voltages as a list or np.ndarray of floats
+    def update_plot(self, voltages):
         voltages = np.array(voltages, dtype=float)
         if voltages.size == 0:
             raise ValueError("Input voltages must be a non-empty array or list.")
@@ -57,10 +63,6 @@ class RealTimePlot(FigureCanvas):
             self.y_data[-n:] = voltages
         self.line.set_ydata(self.y_data)
         self.draw()
-
-    def update_plot(self):
-        self.line.set_ydata(self.y_data)
-        self.draw()
-
+       
     def toggle_pause(self):
         self.paused = not self.paused

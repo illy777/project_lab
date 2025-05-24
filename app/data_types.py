@@ -1,5 +1,11 @@
-from enum import StrEnum, Enum
+# Copyright (c) 2025 
+# SPDX-License-Identifier: MIT
+# Author: Thomas Harald Reinhard RUBIN <thomas.rubin2@protonmail.com>
+#
+# Descritpion: Data types for the EIT measurement system.
 
+
+from enum import StrEnum, Enum
 class MeshType(StrEnum):
     circularMesh = "circular",
     forearmMesh = "forearm",

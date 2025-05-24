@@ -1,10 +1,19 @@
-from abc import ABC, abstractmethod
+# Copyright (c) 2025 
+# SPDX-License-Identifier: MIT
+# Author: Thomas Harald Reinhard RUBIN <thomas.rubin2@protonmail.com>
+#
+# Descritpion: This module is the main Interface between the GUI and the backend EIT system.
+# This module is the overseer for the EIT system, managing the GUI, data acquisition, and pipeline execution.
+from abc import abstractmethod
+from abc import ABC
+import time
 from app.factory import Pipeline
 from app.data_types import MeshType, InjectionPattern, ReconstructionAlgorithm
 
 import numpy as np
 
-class GuiInterface(ABC):
+class GuiInterface():
+
     @abstractmethod
     def get_number_of_electrodes(self) -> int:
         pass
@@ -30,7 +39,7 @@ class GuiInterface(ABC):
         pass
 
     @abstractmethod
-    def set_start_button_callback(self, callback: callable()):
+    def set_start_button_callback(self, callback: callable):
         pass
 
     @abstractmethod
@@ -82,6 +91,7 @@ class Overseer:
 
         self._executing_measurement: bool = False
         self._start_measurement: bool = False
+        self._gui.set_start_button_callback(self.start_button_callback)
 
     def start_button_callback(self, checked_state: bool):
         self._executing_measurement = checked_state
@@ -109,4 +119,6 @@ class Overseer:
                 self._gui.update_heat_map(data, self._pipeline.mesh.el_pos, self._pipeline.mesh.meshObject)
                 self._gui.update_voltage_plot(voltages)
                 anomaly_position = self._pipeline.get_anomaly_position()
+                
                 self._gui.set_anomaly_position(anomaly_position)
+            time.sleep(0.1)

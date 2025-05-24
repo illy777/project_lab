@@ -13,7 +13,7 @@ class PipelineRegistry():
         self._meshoptions = {MeshType.circularMesh: self._choose_circular}
 
     def get_meshtypes(self) -> list[MeshType]:
-        return list(self.meshoptions.keys())
+        return list(self._meshoptions.keys())
 
     def _choose_circular(self, n_el: int, h0: float, *args):
         return CircularMeshPipeline(n_el=n_el, h0=h0)

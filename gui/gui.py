@@ -1,23 +1,41 @@
-import time
-import threading
+# Copyright (c) 2025 
+# SPDX-License-Identifier: MIT
+# Author: Ömer Faruk KANMAZ <kanmazomerfaruk@outlook.com>
+#
+# Descritpion: This module is the main GUI for the application.
+## It provides a user interface for the EIT system, allowing users to configure parameters, visualize data, and interact with the system.
+import threading, time
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout,
     QLabel, QComboBox, QSpinBox, QLineEdit, QTextEdit, QSplitter, QFrame
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter, QPixmap
-from app.builder import Pipeline_Builder
 from gui.heatmap_display import HeatmapDisplay
-from gui.real_time_plot import RealTimePlot
+from gui.voltage_plot import VoltagePlot
 from app.data_acquire import *
-
+from app.overseer import GuiInterface
+from app.data_types import *
+import numpy as np
 
 # Main application class
-class Gui(QWidget):
-    def __init__(self, mesh_types=None):
+class Gui(QWidget,GuiInterface):
+
+    def __init__(self):
         super().__init__()
-        self.mesh_types = mesh_types or []
         self.setWindowTitle("PyEIT_Thorax GUI")
+        self.run_button_callback = None
+        self.data_lock = threading.Lock()
+        self.ds= None
+        self.mesh_obj= None
+        self.el_pos= None
+        self.voltages_V = None
+        self.voltages_data_lock = threading.Lock()
+        self.frequency_Hz = None
+        self.anomaly_position = None
+        self.new_hatmap_data = False
+        self.new_voltage_data = False
+        self.visualization_thread = threading.Thread(target=self.run_visualization, daemon=True)
 
         # Remove background-image from stylesheet, keep only colors for widgets
         self.setStyleSheet("""
@@ -70,7 +88,6 @@ class Gui(QWidget):
 
         sidebar.addWidget(QLabel("Mesh Type"))
         self.mesh_type = QComboBox()
-        self.mesh_type.addItems(self.mesh_types)
         sidebar.addWidget(self.mesh_type)
 
          # Area input for Lung mesh type only
@@ -106,9 +123,9 @@ class Gui(QWidget):
 
 
         sidebar.addWidget(QLabel("Input Electrodes"))
-        self.el_pos = QSpinBox()
-        self.el_pos.setRange(1, 64)
-        sidebar.addWidget(self.el_pos)
+        self.electrode_positions = QSpinBox()
+        self.electrode_positions.setRange(1, 64)
+        sidebar.addWidget(self.electrode_positions)
 
         sidebar.addWidget(QLabel("Algorithm"))
         self.algorithm_select = QComboBox()
@@ -143,7 +160,7 @@ class Gui(QWidget):
         self.heatmap_display.setMinimumHeight(350)
         self.heatmap_display.setMinimumWidth(350)
         visual_row.addWidget(self.heatmap_display, stretch=2)
-        self.plot_canvas = RealTimePlot()
+        self.plot_canvas = VoltagePlot()
         self.plot_canvas.setMinimumHeight(350)
         self.plot_canvas.setMinimumWidth(350)
         visual_row.addWidget(self.plot_canvas, stretch=2)
@@ -176,24 +193,36 @@ class Gui(QWidget):
         main_layout.addWidget(splitter)
 
     def toggle_visualization(self):
+        self.run_button_callback(self.run_button.isChecked())
+
         if self.run_button.isChecked():
             self.run_button.setText("Visualizing...")
-            #self.visualization_thread = threading.Thread(target=self.run_visualization, daemon=True)
-            self.run_visualization()
-            #self.visualization_thread.start()
+            self.log_message(f"""[INFO] Visualization started with parameters:
+                    Mesh: {self.mesh_type.currentText()}
+                    h0: {self.h0_input.text()}
+                    Input Electrodes: {self.electrode_positions.value()}
+                    Number of Electrodes: {self.num_electrodes.currentText()}
+                    Pattern: {self.pattern_select.currentText()}""")
+            if not self.visualization_thread.is_alive():
+                self.visualization_thread.start()
         else:
             self.run_button.setText("Start Visualization")
-
+    
     def run_visualization(self):
-        self.plot_canvas.paused = False
+        while True:
+            if self.new_hatmap_data:
+                with self.data_lock:
+                    self.heatmap_display.update_heatmap_opencv(self.ds, self.mesh_obj, self.el_pos)
+                self.new_hatmap_data = False
+                self.heatmap_display.show()
+                self.log_message(f"Anomaly Position: {self.anomaly_position}")
 
-        self.log_message(f"""[INFO] Visualization started with parameters:
-                Mesh: {self.mesh_type.currentText()}
-                h0: {self.h0_input.text()}
-                Input Electrodes: {self.el_pos.value()}
-                Number of Electrodes: {self.num_electrodes.currentText()}
-                Pattern: {self.pattern_select.currentText()}""")
-
+            if self.new_voltage_data:
+                with self.voltages_data_lock:
+                    self.plot_canvas.update_plot(self.voltages_V)
+                self.new_voltage_data = False
+                self.plot_canvas.show()
+            time.sleep(0.1)  # Adjust sleep time as needed for performance
                 
     def handle_command(self):
         command = self.command_line.text().strip()
@@ -213,11 +242,7 @@ class Gui(QWidget):
         self.visual_output.append(f"{timestamp} {msg}")
         self.visual_output.verticalScrollBar().setValue(self.visual_output.verticalScrollBar().maximum())
     
-    #Getters for parameters
-    def get_mesh_type(self):
-        return self.mesh_type.currentText().lower()
-    
-    def get_n_electrodes(self):
+    def get_number_of_electrodes(self):
         return int(self.num_electrodes.currentText())
     
     def get_h0(self):
@@ -227,16 +252,44 @@ class Gui(QWidget):
             self.log_message("[ERROR] Invalid h0 value")
             return None
         
+    #Getters for parameters
+    def get_selected_mesh_type(self):
+        return self.mesh_type.currentText().lower()
+        
     def get_max_area(self):
         try:
             return float(self.area_input.text())
         except ValueError:
             self.log_message("[ERROR] Invalid max area value")
             return None
-    def get_pattern(self):
-        return self.pattern_select.currentText().lower()
         
-    def get_algorithm(self):
+    def get_injection_pattern(self):
+        return self.pattern_select.currentText().lower()
+    
+    def get_reconstruction_algorithm(self):
         return self.algorithm_select.currentText().lower()
+    
+    def set_start_button_callback(self, callback: callable):
+        self.run_button_callback = callback
+
     def get_el_pos(self):
         return self.el_pos.value()
+    
+    def set_meshtypes(self, meshtypes: list[MeshType]):
+        self.mesh_type.addItems(meshtypes)
+
+    def set_anomaly_position(self, anomaly_position: int):
+        self.anomaly_position = anomaly_position
+
+    def update_heat_map(self, data, el_position: int, mesh_object):
+        with self.data_lock:
+            self.ds = data
+            self.el_pos = el_position
+            self.mesh_obj = mesh_object
+            self.new_hatmap_data = True
+
+    def update_voltage_plot(self, voltages_V: np.ndarray, frequency_Hz: float = 10):
+        with self.voltages_data_lock:
+            self.voltages_V = voltages_V
+            self.frequency_Hz = frequency_Hz
+            self.new_voltage_data = True

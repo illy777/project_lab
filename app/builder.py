@@ -21,12 +21,12 @@ class PipelineBuilder(PipelineBuilderInterface):
 
     def build_pipeline(self, meshtype: str, n_el: int, h0: float, maxArea: float) -> Pipeline:
         self._validate_meshtype(meshtype)
-        for key, choose_func in self.registry.meshoptions.items():
+        for key, choose_func in self.registry._meshoptions.items():
             if key == meshtype:
                 pipeline = choose_func(n_el, h0, maxArea)
                 break
         if pipeline is None:
             raise ValueError("Measurement object is not initialized. Please check the meshtype and parameters.")
-        if not callable(pipeline.do_measurement):
+        if not callable(pipeline.evaluate_data):
             raise ValueError("Measurement method is not callable. Please implement the method do_measurement(self, data:np.ndarray)-> np.ndarray in the measurement class.")
         return pipeline

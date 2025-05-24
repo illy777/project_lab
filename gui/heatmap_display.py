@@ -1,3 +1,9 @@
+# Copyright (c) 2025 
+# SPDX-License-Identifier: MIT
+# Author: Ömer Faruk KANMAZ <kanmazomerfaruk@outlook.com>
+#
+# Descritpion: This module is the heatmap visualization for the EIT system, using PyQt6 and OpenCV for rendering.
+## This module is the heatmap display for the EIT system, using PyQt6 and OpenCV for rendering.
 import numpy as np
 import cv2
 from PyQt6.QtWidgets import QLabel
@@ -24,9 +30,9 @@ class HeatmapDisplay(QLabel):
             fig, ax = plt.subplots(figsize=(3, 2.5), dpi=1200)
             ax.imshow(blank, cmap='jet', aspect='auto')
         else:
-            pts = mesh_obj.node
-            tri = mesh_obj.element
-            perm0 = mesh_obj.perm
+            pts = mesh_obj["node"]
+            tri = mesh_obj["element"]
+            #perm0 = mesh_obj["perm0"]
 
             x, y = pts[:, 0], pts[:, 1]
 
@@ -69,8 +75,9 @@ class HeatmapDisplay(QLabel):
             img = np.zeros((img_h, img_w, 3), dtype=np.uint8)
             cv2.putText(img, "No Data", (img_w//4, img_h//2), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,128), 2, cv2.LINE_AA)
         else:
-            pts = mesh_obj.node
-            tri = mesh_obj.element
+            pts = mesh_obj["node"]
+            tri = mesh_obj["element"]
+            #perm0 = mesh_obj["perm0"]
             x, y = pts[:, 0], pts[:, 1]
 
             # Normalize coordinates to fit image
