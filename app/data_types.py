@@ -1,18 +1,34 @@
 # Copyright (c) 2025 
 # SPDX-License-Identifier: MIT
 # Author: Thomas Harald Reinhard RUBIN <thomas.rubin2@protonmail.com>
+# Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
 #
 # Descritpion: Data types for the EIT measurement system.
 
 
-from enum import Enum
+from enum import StrEnum, Enum
 
-class InjectionPattern(Enum):
-    adjacent = 0,
-    opposite = 1,
-    skip3 = 2,
-    rotatingRadial = 3
 
-class ReconstructionAlgorithm(Enum):
-    pipeline = 0,
-    gaussNewton = 1
+class ElectrodeNumber(Enum):
+    EIGHT = 8
+    SIXTEEN = 16
+    THIRTY_TWO = 32
+    SIXTY_FOUR = 64
+
+    def __str__(self):
+        return str(self.value)
+    
+    def __int__(self):
+        return self.value
+
+class InjectionPattern(StrEnum):
+    ADJACENT = "adjacent",
+    OPPOSITE = "opposite",
+    SKIP3 = "skip3",
+    ROTATING_RADIAL = "rotatingRadial"
+    
+    def __str__(self):
+        return self.value
+    
+    def __int__(self):
+        return self.value

@@ -8,6 +8,7 @@
 from pipelines.circular_mesh import *
 from pipelines.registry import *
 from app.app import PipelineBuilderInterface, RegistryInterface
+from app.data_types import *
 
 class PipelineBuilder(PipelineBuilderInterface):
     def __init__(self, registry: RegistryInterface):
@@ -20,11 +21,11 @@ class PipelineBuilder(PipelineBuilderInterface):
         if meshtype not in meshtypes:
             raise ValueError(f"Invalid meshtype: {meshtype}. Available meshtypes are: {meshtypes}")
 
-    def build_pipeline(self, meshtype: str, n_el: int, h0: float, maxArea: float) -> Pipeline:
+    def build_pipeline(self, meshtype: str, n_el: ElectrodeNumber, h0: float, maxArea: float, injection_pattern: InjectionPattern) -> Pipeline:
         self._validate_meshtype(meshtype)
         for key, choose_func in self.registry._meshoptions.items():
             if key == meshtype:
-                pipeline = choose_func(n_el, h0, maxArea)
+                pipeline = choose_func(n_el, h0, maxArea, injection_pattern)
                 break
         if pipeline is None:
             raise ValueError("Measurement object is not initialized. Please check the meshtype and parameters.")

@@ -1,21 +1,23 @@
 # Copyright (c) 2025 
 # SPDX-License-Identifier: MIT
 # Author: Thomas Harald Reinhard Rubin <thomas.rubin2@protonmail.com>
+# Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
 #
 # Descritpion: This module is the main Interface between the GUI and the backend EIT system.
 # This module is the overseer for the EIT system, managing the GUI, data acquisition, and pipeline execution.
+
 from abc import abstractmethod
 from abc import ABC
 import time
 from app.factory import Pipeline
-from app.data_types import InjectionPattern, ReconstructionAlgorithm
+from app.data_types import *
 
 import numpy as np
 
 class GuiInterface():
 
     @abstractmethod
-    def get_number_of_electrodes(self) -> int:
+    def get_number_of_electrodes(self) -> ElectrodeNumber:
         pass
 
     @abstractmethod
@@ -32,10 +34,6 @@ class GuiInterface():
 
     @abstractmethod
     def get_injection_pattern(self) -> InjectionPattern:
-        pass
-
-    @abstractmethod
-    def get_reconstruction_algorithm(self) -> ReconstructionAlgorithm:
         pass
 
     @abstractmethod
@@ -62,7 +60,8 @@ class GuiInterface():
     def update_voltage_plot(self, voltages_V: np.ndarray, frequency_Hz: float = 10):
         pass
 
-class DataAcquirer(ABC):
+class DataAcquirerInterface(ABC):
+
     @abstractmethod
     def connect(self):
         """This method should be implemented in the derived class."""
@@ -76,7 +75,7 @@ class DataAcquirer(ABC):
         """This method should be implemented in the derived class."""
         pass
     @abstractmethod
-    def get_serial_ports(self) -> str:
+    def get_serial_ports(self) -> list[str]:
         """This method should return a list of available serial ports."""
         pass
     @abstractmethod
@@ -103,7 +102,7 @@ class RegistryInterface(ABC):
         pass
 
 class Sentinel:
-    def __init__(self, gui_interface: GuiInterface, data_acquirer_interface: DataAcquirer,
+    def __init__(self, gui_interface: GuiInterface, data_acquirer_interface: DataAcquirerInterface,
                  pipeline_builder_interface: PipelineBuilderInterface,
                  registry_interface: RegistryInterface):
         self._gui = gui_interface
@@ -138,7 +137,8 @@ class Sentinel:
                     number_electrods = self._gui.get_number_of_electrodes()
                     h0 = self._gui.get_h0()
 
-                    self._pipeline = self._pipeline_builder.build_pipeline(meshtype, number_electrods, h0, maxArea=None)
+                    self._pipeline = self._pipeline_builder.build_pipeline(meshtype, number_electrods, h0, maxArea=None, 
+                                                                          injection_pattern=self._gui.get_injection_pattern())
                     self._start_measurement = False
                     if self._pipeline is None:
                         raise RuntimeError("Pipeline is not set.")

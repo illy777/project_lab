@@ -7,30 +7,51 @@
 
 import serial
 import numpy as np
-from app.app import DataAcquirer
+from app.app import DataAcquirerInterface
 
-class SerialPort(DataAcquirer):
+class Parser():
+
+    @staticmethod
+    def _is_float(value: str) -> bool:
+        """Check if a string can be converted to a float."""
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
+    def parse_data(source: str) -> np.ndarray:
+        """Process the raw data string into a list of floats."""
+        data_str = source.split('\\n')
+        data_str = data_str[0].split('\\r')
+        data_str = data_str[0]
+        if isinstance(data_str, list) or data_str is None:
+            raise ValueError("Parsed data_str is invalid.")
+        data_str = data_str.split(' ')
+        data = [x for x in data_str if Parser()._is_float(x)] 
+        if data is None or len(data) == 0:
+            raise ValueError("Parsed data is invalid.")
+        return np.array([float(x) for x in data])
+        
+class SerialPort(DataAcquirerInterface):
     def __init__(self, port='COM3', baudrate=115200):
         self.port = port
         self.baudrate = baudrate
         self.serialConnection = None
 
     def connect(self):
-        try:
-            self.serialConnection = serial.Serial(self.port, self.baudrate)
-            self.serialConnection.write(bytes(1)) #handshake
-            print(f"Connected to {self.port} at {self.baudrate} baud.")
-        except serial.SerialException as e:
-            print(f"Error connecting to serial port: {e}")
+        self.serialConnection = serial.Serial(self.port, self.baudrate)
+        self.serialConnection.write(bytes(1))
 
     def disconnect(self):
         if self.serialConnection and self.serialConnection.is_open:
             self.serialConnection.close()
-            print("Disconnected from serial port.")
 
     def _read_data(self):
         """Read raw data string from serial until end marker is found."""
         dataStr = ""
+        self.serialConnection.write(bytes(1))
         while not ('\\r\\n' in dataStr):
             dataByte = self.serialConnection.read(self.serialConnection.inWaiting())
             if len(dataByte) > 0:
@@ -39,19 +60,34 @@ class SerialPort(DataAcquirer):
 
     def acquire_data(self) -> np.ndarray:
         data = self._read_data()
-        return self._parse_data(data)
-        
-    def _parse_data(self, source: str) -> np.ndarray:
-        """Process the raw data string into a list of floats."""
-        data_str = source.split('\\n\\r\\n')
-        if len(data_str) > 1:
-            dataLimit = [x for x in data_str[2:] if x != 'n']
-            return np.array([float(x) for x in dataLimit])
+        return Parser.parse_data(data)
+
+    def get_available_baudrates(self) -> list[int]:
+        """Return a list of common baud rates."""
+        return [300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200, 230400, 250000, 500000, 1000000]
+
+    def get_serial_ports(self) -> list[str]:
+        """Return a list of available serial ports."""
+        return [port.device for port in serial.tools.list_ports.comports()]
+
+    def set_serial_port(self, port: str):
+        """Set the serial port to connect to."""
+        self.port = port
+        if self.serialConnection and self.serialConnection.is_open:
+            self.disconnect()
+        self.connect()
+    
+    def set_baudrate(self, baudrate: int):
+        """Set the baud rate for the serial connection."""
+        self.baudrate = baudrate
+        if self.serialConnection and self.serialConnection.is_open:
+            self.disconnect()
+        self.connect()
 
     def __del__(self):
         self.disconnect()
 
-class FileHandler(DataAcquirer):
+class FileHandler(DataAcquirerInterface):
 
     def __init__(self, file_path: str):
         self.data = None
@@ -72,21 +108,24 @@ class FileHandler(DataAcquirer):
             self.line_counter = 0
         return line
 
-    def _parse_data_from_file(self, source: str) -> np.ndarray:
-        """Process the raw data string into a list of floats."""
-        dataStr = source.split(' ')
-        if len(dataStr) > 1:
-            dataLimit = [x for x in dataStr[2:]] # eliminate the extra ('I' 'got') in div_str; make the string to be float
-            return np.array([float(x) for x in dataLimit])
-        else:
-            raise ValueError("Data string is not in the expected format.")
-        
     def connect(self):
         pass
 
     def disconnect(self):
         pass
 
+    def get_available_baudrates(self) -> list[int]:
+        return []
+
+    def get_serial_ports(self) -> list[str]:
+       return []
+
+    def set_serial_port(self, port: str):
+        pass
+
+    def set_baudrate(self, baudrate: int):
+        pass
+
     def acquire_data(self) -> np.ndarray:
         data = self._read_line()
-        return self._parse_data_from_file(data)
+        return Parser.parse_data(data)
