@@ -1,6 +1,7 @@
 # Copyright (c) 2025 
 # SPDX-License-Identifier: MIT
 # Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
+# Author: Thomas Harald Reinhard Rubin <thomas.rubin2@protonmail.com>
 #
 # Description: This module contains the foundation for the data pipeline, including the mesh generation and model loading.
 

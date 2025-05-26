@@ -1,6 +1,7 @@
 # Copyright (c) 2025 
 # SPDX-License-Identifier: MIT
 # Author: Ömer Faruk KANMAZ <kanmazomerfaruk@outlook.com>
+# Author: Thomas Harald Reinhard Rubin <thomas.rubin2@protonmail.com>
 #
 # Descritpion: This module is the main GUI for the application.
 ## It provides a user interface for the EIT system, allowing users to configure parameters, visualize data, and interact with the system.

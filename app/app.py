@@ -1,6 +1,6 @@
 # Copyright (c) 2025 
 # SPDX-License-Identifier: MIT
-# Author: Thomas Harald Reinhard RUBIN <thomas.rubin2@protonmail.com>
+# Author: Thomas Harald Reinhard Rubin <thomas.rubin2@protonmail.com>
 #
 # Descritpion: This module is the main Interface between the GUI and the backend EIT system.
 # This module is the overseer for the EIT system, managing the GUI, data acquisition, and pipeline execution.
