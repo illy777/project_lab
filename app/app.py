@@ -136,10 +136,13 @@ class Sentinel:
                 anomaly_position = self._pipeline.get_anomaly_position()
                 
                 self._gui.set_anomaly_position(anomaly_position)
-            try:
-                self._dataAcquirer.disconnect()
-                self._gui.log_message('Disconnected from data acquirer.')
-            except Exception as e:
-                self._gui.log_message(f"Error disconnecting from data acquirer: {e}")
-            self._gui.log_message('Measurement stopped.')
+    
+            if self.connected:
+                try:
+                    self._dataAcquirer.disconnect()
+                    self._gui.log_message('Disconnected from data acquirer.')
+                except Exception as e:
+                    self._gui.log_message(f"Error disconnecting from data acquirer: {e}")
+                self._gui.log_message('Measurement stopped.')
+                self.connected = False
             time.sleep(0.1)
