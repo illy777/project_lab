@@ -10,14 +10,14 @@ from abc import abstractmethod
 from abc import ABC
 import time
 from app.factory import Pipeline
-from app.data_types import InjectionPattern
+from app.data_types import *
 
 import numpy as np
 
 class GuiInterface():
 
     @abstractmethod
-    def get_number_of_electrodes(self) -> int:
+    def get_number_of_electrodes(self) -> ElectrodeNumber:
         pass
 
     @abstractmethod
@@ -137,7 +137,8 @@ class Sentinel:
                     number_electrods = self._gui.get_number_of_electrodes()
                     h0 = self._gui.get_h0()
 
-                    self._pipeline = self._pipeline_builder.build_pipeline(meshtype, number_electrods, h0, maxArea=None)
+                    self._pipeline = self._pipeline_builder.build_pipeline(meshtype, number_electrods, h0, maxArea=None, 
+                                                                          injection_pattern=self._gui.get_injection_pattern())
                     self._start_measurement = False
                     if self._pipeline is None:
                         raise RuntimeError("Pipeline is not set.")
