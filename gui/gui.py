@@ -14,7 +14,6 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter, QPixmap
 from gui.heatmap_display import HeatmapDisplay
 from gui.voltage_plot import VoltagePlot
-from app.data_acquire import *
 from app.app import GuiInterface
 from app.data_types import *
 import numpy as np
@@ -122,20 +121,14 @@ class Gui(QWidget,GuiInterface):
         # Call once to set initial state
         on_mesh_type_changed(self.mesh_type.currentIndex())
 
-
-        sidebar.addWidget(QLabel("Input Electrodes"))
-        self.electrode_positions = QSpinBox()
-        self.electrode_positions.setRange(1, 64)
-        sidebar.addWidget(self.electrode_positions)
-
         sidebar.addWidget(QLabel("Number of Electrodes"))
         self.num_electrodes = QComboBox()
-        self.num_electrodes.addItems(["8", "16"])
+        self.num_electrodes.addItems([str(e.value) for e in ElectrodeNumber])
         sidebar.addWidget(self.num_electrodes)
 
         sidebar.addWidget(QLabel("Injection Pattern"))
         self.pattern_select = QComboBox()
-        self.pattern_select.addItems(["Adjacent", "Opposite", "Skip-3", "Radial"])
+        self.pattern_select.addItems([pattern.value for pattern in InjectionPattern])
         sidebar.addWidget(self.pattern_select)
 
         self.run_button = QPushButton("Start Visualization")
@@ -173,11 +166,6 @@ class Gui(QWidget,GuiInterface):
         self.visual_output.setFixedHeight(200)  # Smaller height for anomaly detection log
         main_area.addWidget(self.visual_output)
 
-        self.command_line = QLineEdit()
-        self.command_line.setPlaceholderText("Enter command or parameter (e.g. set h0=0.15)")
-        self.command_line.returnPressed.connect(self.handle_command)
-        main_area.addWidget(self.command_line)
-
         splitter = QSplitter(Qt.Orientation.Horizontal)
         sidebar_widget = QWidget()
         sidebar_widget.setLayout(sidebar)
@@ -196,7 +184,6 @@ class Gui(QWidget,GuiInterface):
             self.log_message(f"""[INFO] Visualization started with parameters:
                     Mesh: {self.mesh_type.currentText()}
                     h0: {self.h0_input.text()}
-                    Input Electrodes: {self.electrode_positions.value()}
                     Number of Electrodes: {self.num_electrodes.currentText()}
                     Pattern: {self.pattern_select.currentText()}""")
             if not self.visualization_thread.is_alive():
