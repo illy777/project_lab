@@ -9,7 +9,6 @@ import serial
 import numpy as np
 from app.app import DataAcquirerInterface
 
-
 class DataAcquirer():
     def _parse_data(self, source: str) -> np.ndarray:
         """Process the raw data string into a list of floats."""
@@ -39,17 +38,12 @@ class SerialPort(DataAcquirerInterface, DataAcquirer):
         self.serialConnection = None
 
     def connect(self):
-        try:
-            self.serialConnection = serial.Serial(self.port, self.baudrate)
-            self.serialConnection.write(bytes(1))
-            print(f"Connected to {self.port} at {self.baudrate} baud.")
-        except serial.SerialException as e:
-            print(f"Error connecting to serial port: {e}")
+        self.serialConnection = serial.Serial(self.port, self.baudrate)
+        self.serialConnection.write(bytes(1))
 
     def disconnect(self):
         if self.serialConnection and self.serialConnection.is_open:
             self.serialConnection.close()
-            print("Disconnected from serial port.")
 
     def _read_data(self):
         """Read raw data string from serial until end marker is found."""
@@ -65,17 +59,27 @@ class SerialPort(DataAcquirerInterface, DataAcquirer):
         data = self._read_data()
         return self._parse_data(data)
 
-    def get_available_baudrates(self):
-        pass
+    def get_available_baudrates(self) -> list[int]:
+        """Return a list of common baud rates."""
+        return [300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200, 230400, 250000, 500000, 1000000]
 
-    def get_serial_ports(self):
-        pass
+    def get_serial_ports(self) -> list[str]:
+        """Return a list of available serial ports."""
+        return [port.device for port in serial.tools.list_ports.comports()]
 
     def set_serial_port(self, port: str):
-        pass
+        """Set the serial port to connect to."""
+        self.port = port
+        if self.serialConnection and self.serialConnection.is_open:
+            self.disconnect()
+        self.connect()
     
     def set_baudrate(self, baudrate: int):
-        pass
+        """Set the baud rate for the serial connection."""
+        self.baudrate = baudrate
+        if self.serialConnection and self.serialConnection.is_open:
+            self.disconnect()
+        self.connect()
 
     def __del__(self):
         self.disconnect()
@@ -107,11 +111,11 @@ class FileHandler(DataAcquirerInterface, DataAcquirer):
     def disconnect(self):
         pass
 
-    def get_available_baudrates(self):
-        pass
+    def get_available_baudrates(self) -> list[int]:
+        return []
 
-    def get_serial_ports(self):
-        pass
+    def get_serial_ports(self) -> list[str]:
+       return []
 
     def set_serial_port(self, port: str):
         pass

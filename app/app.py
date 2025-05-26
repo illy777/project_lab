@@ -77,7 +77,7 @@ class DataAcquirerInterface(ABC):
         """This method should be implemented in the derived class."""
         pass
     @abstractmethod
-    def get_serial_ports(self) -> str:
+    def get_serial_ports(self) -> list[str]:
         """This method should return a list of available serial ports."""
         pass
     @abstractmethod
