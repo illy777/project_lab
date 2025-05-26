@@ -1,0 +1,18 @@
+# Copyright (c) 2025 
+# SPDX-License-Identifier: MIT
+# Author: Thomas Harald Reinhard RUBIN <thomas.rubin2@protonmail.com>
+#
+# Descritpion: Data types for the EIT measurement system.
+
+
+from enum import Enum
+
+class InjectionPattern(Enum):
+    adjacent = 0,
+    opposite = 1,
+    skip3 = 2,
+    rotatingRadial = 3
+
+class ReconstructionAlgorithm(Enum):
+    pipeline = 0,
+    gaussNewton = 1

@@ -1,15 +1,15 @@
 # Copyright (c) 2025 
 # SPDX-License-Identifier: MIT
 # Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
+# Author: Thomas Harald Reinhard Rubin <thomas.rubin2@protonmail.com>
 #
 # Descritpion: This module contains a class for acquiring data from the serial port for this specific application.
 
 import serial
 import numpy as np
-from abc import ABC, abstractmethod
-from app.factory import Data_Acquirer
+from app.app import DataAcquirer
 
-class SerialPort(Data_Acquirer):
+class SerialPort(DataAcquirer):
     def __init__(self, port='COM3', baudrate=115200):
         self.port = port
         self.baudrate = baudrate
@@ -28,7 +28,7 @@ class SerialPort(Data_Acquirer):
             self.serialConnection.close()
             print("Disconnected from serial port.")
 
-    def read_data(self):
+    def _read_data(self):
         """Read raw data string from serial until end marker is found."""
         dataStr = ""
         while not ('\\r\\n' in dataStr):
@@ -38,13 +38,20 @@ class SerialPort(Data_Acquirer):
         return dataStr
 
     def acquire_data(self) -> np.ndarray:
-        """Combined method for compatibility."""
-        pass
+        data = self._read_data()
+        return self._parse_data(data)
         
+    def _parse_data(self, source: str) -> np.ndarray:
+        """Process the raw data string into a list of floats."""
+        data_str = source.split('\\n\\r\\n')
+        if len(data_str) > 1:
+            dataLimit = [x for x in data_str[2:] if x != 'n']
+            return np.array([float(x) for x in dataLimit])
+
     def __del__(self):
         self.disconnect()
 
-class FileHandler(Data_Acquirer):
+class FileHandler(DataAcquirer):
 
     def __init__(self, file_path: str):
         self.data = None
@@ -74,6 +81,12 @@ class FileHandler(Data_Acquirer):
         else:
             raise ValueError("Data string is not in the expected format.")
         
+    def connect(self):
+        pass
+
+    def disconnect(self):
+        pass
+
     def acquire_data(self) -> np.ndarray:
         data = self._read_line()
         return self._parse_data_from_file(data)

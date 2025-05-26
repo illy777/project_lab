@@ -1,29 +1,31 @@
-# Copyright (c) 2025 
-# SPDX-License-Identifier: MIT
-# Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
-#
-# Descritpion: This module contains the main application logic for the EIT measurement system.
+#Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
+#Descritpion: This module contains the main application logic for the EIT measurement system.
 
 from app.data_acquire import *
 from pipelines.registry import *
 from app.builder import *
-from gui.plot import *
-from PyQt5.QtWidgets import QApplication
+from gui.gui import Gui
+from PyQt6.QtWidgets import QApplication
 import sys
+import threading
+from app.app import Sentinel
+
     
 
 if __name__ == "__main__":
     # Example usage
     app = QApplication(sys.argv)
-    plotter = PLOT()
 
-    registred_pipes = Pipeline_Registry().get_meshtypes()
-    data_interface = FileHandler("simulation/simulation.txt")
-    pipeline = Pipeline_Builder().build_pipeline(meshtype='circular', n_el=8, h0=0.07, maxArea=None, data_interface=data_interface)
+    data_acquirer = FileHandler("simulation/simulation.txt")
+    gui = Gui()
+    registry = PipelineRegistry()
+    pipeline_builder =  PipelineBuilder(registry)
+    gui.resize(1200, 700)
+    gui.show()
 
-    plotter.show()
-    while True:
-        data = pipeline.do_measurement()
-        plotter.eitplot(ds=data, el_pos=pipeline.mesh.el_pos, mesh_obj=pipeline.mesh.meshObject)
-    #plotter.start.clicked.connect(object_value)
-    sys.exit(app.exec_())
+    overseer = Sentinel(gui, data_acquirer, pipeline_builder, registry)
+    overseerThread = threading.Thread(target=overseer.exec, daemon=True)
+    overseerThread.start()
+
+    sys.exit(app.exec())
+

@@ -40,6 +40,20 @@ class CircularMeshModel(Model):
             4: center,
             5: center
         }
+        
+    def load_model(self, model_name: str, model_file: str, load_function: callable):
+        """Load a model using the specified load function."""
+        model_path = self.get_model_path(model_name, model_file)
+        if model_name == "compensation":
+            self.compensation_model = load_function(model_path)
+        elif model_name == "region":
+            self.region_model = load_function(model_path)
+        elif model_name == "reconstruction":
+            self.reconstruction_model = load_function(model_path)
+        elif model_name == "denoising":
+            self.denoising_model = load_function(model_path)
+        else:
+            raise ValueError(f"Unknown model name: {model_name}")
     
     def _get_prediction_models(self):
         self.load_model("compensation", 'gp_model_new_1_0.001.pkl', joblib.load)
