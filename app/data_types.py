@@ -13,6 +13,3 @@ class InjectionPattern(Enum):
     skip3 = 2,
     rotatingRadial = 3
 
-class ReconstructionAlgorithm(Enum):
-    pipeline = 0,
-    gaussNewton = 1

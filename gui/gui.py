@@ -128,11 +128,6 @@ class Gui(QWidget,GuiInterface):
         self.electrode_positions.setRange(1, 64)
         sidebar.addWidget(self.electrode_positions)
 
-        sidebar.addWidget(QLabel("Algorithm"))
-        self.algorithm_select = QComboBox()
-        self.algorithm_select.addItems(["Gauss-Newton", "Pipeline (GP + DL + Denoising)"])
-        sidebar.addWidget(self.algorithm_select)
-
         sidebar.addWidget(QLabel("Number of Electrodes"))
         self.num_electrodes = QComboBox()
         self.num_electrodes.addItems(["8", "16"])

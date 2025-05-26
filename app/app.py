@@ -8,7 +8,7 @@ from abc import abstractmethod
 from abc import ABC
 import time
 from app.factory import Pipeline
-from app.data_types import InjectionPattern, ReconstructionAlgorithm
+from app.data_types import InjectionPattern
 
 import numpy as np
 
@@ -32,10 +32,6 @@ class GuiInterface():
 
     @abstractmethod
     def get_injection_pattern(self) -> InjectionPattern:
-        pass
-
-    @abstractmethod
-    def get_reconstruction_algorithm(self) -> ReconstructionAlgorithm:
         pass
 
     @abstractmethod
