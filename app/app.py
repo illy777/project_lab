@@ -75,6 +75,22 @@ class DataAcquirer(ABC):
     def acquire_data(self) -> np.ndarray:
         """This method should be implemented in the derived class."""
         pass
+    @abstractmethod
+    def get_serial_ports(self) -> str:
+        """This method should return a list of available serial ports."""
+        pass
+    @abstractmethod
+    def get_available_baudrates(self) -> list[int]:
+        """This method should return a list of available baud rates."""
+        pass
+    @abstractmethod
+    def set_serial_port(self, port: str):
+        """This method should set the serial port."""
+        pass
+    @abstractmethod
+    def set_baudrate(self, baudrate: int):
+        """This method should set the baud rate."""
+        pass
 
 class PipelineBuilderInterface(ABC):
     @abstractmethod
