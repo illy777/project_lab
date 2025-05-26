@@ -62,7 +62,8 @@ class GuiInterface():
     def update_voltage_plot(self, voltages_V: np.ndarray, frequency_Hz: float = 10):
         pass
 
-class DataAcquirer(ABC):
+class DataAcquirerInterface(ABC):
+
     @abstractmethod
     def connect(self):
         """This method should be implemented in the derived class."""
@@ -103,7 +104,7 @@ class RegistryInterface(ABC):
         pass
 
 class Sentinel:
-    def __init__(self, gui_interface: GuiInterface, data_acquirer_interface: DataAcquirer,
+    def __init__(self, gui_interface: GuiInterface, data_acquirer_interface: DataAcquirerInterface,
                  pipeline_builder_interface: PipelineBuilderInterface,
                  registry_interface: RegistryInterface):
         self._gui = gui_interface
