@@ -9,8 +9,19 @@ import serial
 import numpy as np
 from app.app import DataAcquirerInterface
 
-class DataAcquirer():
-    def _parse_data(self, source: str) -> np.ndarray:
+class Parser():
+
+    @staticmethod
+    def _is_float(value: str) -> bool:
+        """Check if a string can be converted to a float."""
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
+    def parse_data(source: str) -> np.ndarray:
         """Process the raw data string into a list of floats."""
         data_str = source.split('\\n')
         data_str = data_str[0].split('\\r')
@@ -18,20 +29,12 @@ class DataAcquirer():
         if isinstance(data_str, list) or data_str is None:
             raise ValueError("Parsed data_str is invalid.")
         data_str = data_str.split(' ')
-        data = [x for x in data_str if self._is_float(x)] 
+        data = [x for x in data_str if Parser()._is_float(x)] 
         if data is None or len(data) == 0:
             raise ValueError("Parsed data is invalid.")
         return np.array([float(x) for x in data])
-
-    def _is_float(self, value: str) -> bool:
-        """Check if a string can be converted to a float."""
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
         
-class SerialPort(DataAcquirerInterface, DataAcquirer):
+class SerialPort(DataAcquirerInterface):
     def __init__(self, port='COM3', baudrate=115200):
         self.port = port
         self.baudrate = baudrate
@@ -57,7 +60,7 @@ class SerialPort(DataAcquirerInterface, DataAcquirer):
 
     def acquire_data(self) -> np.ndarray:
         data = self._read_data()
-        return self._parse_data(data)
+        return Parser.parse_data(data)
 
     def get_available_baudrates(self) -> list[int]:
         """Return a list of common baud rates."""
@@ -84,7 +87,7 @@ class SerialPort(DataAcquirerInterface, DataAcquirer):
     def __del__(self):
         self.disconnect()
 
-class FileHandler(DataAcquirerInterface, DataAcquirer):
+class FileHandler(DataAcquirerInterface):
 
     def __init__(self, file_path: str):
         self.data = None
@@ -125,4 +128,4 @@ class FileHandler(DataAcquirerInterface, DataAcquirer):
 
     def acquire_data(self) -> np.ndarray:
         data = self._read_line()
-        return self._parse_data(data)
+        return Parser.parse_data(data)
