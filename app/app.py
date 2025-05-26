@@ -1,9 +1,11 @@
 # Copyright (c) 2025 
 # SPDX-License-Identifier: MIT
 # Author: Thomas Harald Reinhard Rubin <thomas.rubin2@protonmail.com>
+# Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
 #
 # Descritpion: This module is the main Interface between the GUI and the backend EIT system.
 # This module is the overseer for the EIT system, managing the GUI, data acquisition, and pipeline execution.
+
 from abc import abstractmethod
 from abc import ABC
 import time

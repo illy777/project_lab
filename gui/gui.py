@@ -5,6 +5,7 @@
 #
 # Descritpion: This module is the main GUI for the application.
 ## It provides a user interface for the EIT system, allowing users to configure parameters, visualize data, and interact with the system.
+
 import threading, time
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout,

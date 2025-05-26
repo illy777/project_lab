@@ -1,6 +1,7 @@
 # Copyright (c) 2025 
 # SPDX-License-Identifier: MIT
 # Author: Thomas Harald Reinhard RUBIN <thomas.rubin2@protonmail.com>
+# Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
 #
 # Descritpion: Data types for the EIT measurement system.
 

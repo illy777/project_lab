@@ -4,6 +4,7 @@
 #
 # Descritpion: This module is the heatmap visualization for the EIT system, using PyQt6 and OpenCV for rendering.
 ## This module is the heatmap display for the EIT system, using PyQt6 and OpenCV for rendering.
+
 import numpy as np
 import cv2
 from PyQt6.QtWidgets import QLabel

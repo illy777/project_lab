@@ -1,5 +1,9 @@
-#Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
-#Descritpion: This module contains the main application logic for the EIT measurement system.
+# Copyright (c) 2025 
+# SPDX-License-Identifier: MIT
+# Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
+# Author: Thomas Harald Reinhard Rubin <thomas.rubin2@protonmail.com>
+
+# Descritpion: This module contains the main application logic for the EIT measurement system.
 
 from app.data_acquire import *
 from pipelines.registry import *
