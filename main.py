@@ -27,9 +27,8 @@ if __name__ == "__main__":
     gui.resize(1200, 700)
     gui.show()
 
-    overseer = Sentinel(gui, data_acquirer, pipeline_builder, registry)
-    overseerThread = threading.Thread(target=overseer.exec, daemon=True)
-    overseerThread.start()
+    # automatically starts the backend thread during creation of Sentinel
+    sentinel = Sentinel(gui, data_acquirer, pipeline_builder, registry)
 
     sys.exit(app.exec())
 

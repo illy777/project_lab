@@ -26,6 +26,7 @@ class Gui(QWidget,GuiInterface):
         super().__init__()
         self.setWindowTitle("PyEIT_Thorax GUI")
         self.run_button_callback = None
+        self.close_callback = None
         self.data_lock = threading.Lock()
         self.ds= None
         self.mesh_obj= None
@@ -36,6 +37,8 @@ class Gui(QWidget,GuiInterface):
         self.anomaly_position = None
         self.new_hatmap_data = False
         self.new_voltage_data = False
+
+        # daemon -> just terminate when program exits, will not continue to run in background
         self.visualization_thread = threading.Thread(target=self.run_visualization, daemon=True)
 
         # Remove background-image from stylesheet, keep only colors for widgets
@@ -71,6 +74,12 @@ class Gui(QWidget,GuiInterface):
 
         self.background_pixmap = QPixmap("/Users/omerfarukkanmaz/Desktop/Uni/project_lab/project_lab/gui/background.png")
         self.setup_ui()
+
+    def closeEvent(self, event):
+        if self.close_callback is None:
+            raise RuntimeError("Close callback for backend is not set!")
+        else:
+            self.close_callback()
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -226,10 +235,10 @@ class Gui(QWidget,GuiInterface):
         self.visual_output.append(f"{timestamp} {msg}")
         self.visual_output.verticalScrollBar().setValue(self.visual_output.verticalScrollBar().maximum())
     
-    def get_number_of_electrodes(self):
+    def get_selected_number_of_electrodes(self):
         return int(self.num_electrodes.currentText())
     
-    def get_h0(self):
+    def get_selected_h0(self):
         try:
             return float(self.h0_input.text())
         except ValueError:
@@ -240,24 +249,21 @@ class Gui(QWidget,GuiInterface):
     def get_selected_mesh_type(self):
         return self.mesh_type.currentText().lower()
         
-    def get_max_area(self):
+    def get_selected_max_area(self):
         try:
             return float(self.area_input.text())
         except ValueError:
             self.log_message("[ERROR] Invalid max area value")
             return None
         
-    def get_injection_pattern(self):
+    def get_selected_injection_pattern(self):
         return self.pattern_select.currentText().lower()
-    
-    def get_reconstruction_algorithm(self):
-        return self.algorithm_select.currentText().lower()
     
     def set_start_button_callback(self, callback: callable):
         self.run_button_callback = callback
 
-    def get_el_pos(self):
-        return self.el_pos.value()
+    def set_close_callback(self, callback: callable):
+        self.close_callback = callback
     
     def set_meshtypes(self, meshtypes: list[str]):
         self.mesh_type.addItems(meshtypes)
