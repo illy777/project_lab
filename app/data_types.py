@@ -32,3 +32,19 @@ class InjectionPattern(StrEnum):
     
     def __int__(self):
         return self.value
+    
+class Baudrate(IntEnum):
+    B9600 = 9600
+    B19200 = 19200
+    B38400 = 38400
+    B57600 = 57600
+    B115200 = 115200
+    B230400 = 230400
+    B460800 = 460800
+    B921600 = 921600
+
+    def __str__(self):
+        return str(self.value)
+    
+    def __int__(self):
+        return self.value
