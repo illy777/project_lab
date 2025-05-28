@@ -8,6 +8,7 @@
 import serial
 import numpy as np
 from app.app import DataAcquirerInterface
+from app.data_types import *
 
 class Parser():
 
@@ -64,7 +65,7 @@ class SerialPort(DataAcquirerInterface):
 
     def get_available_baudrates(self) -> list[int]:
         """Return a list of common baud rates."""
-        return [300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200, 230400, 250000, 500000, 1000000]
+        return [baudrate.value for baudrate in Baudrate]
 
     def get_serial_ports(self) -> list[str]:
         """Return a list of available serial ports."""
