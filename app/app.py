@@ -17,7 +17,7 @@ import numpy as np
 class GuiInterface:
     # getter for current selection in gui
     @abstractmethod
-    def get_selected_number_of_electrodes(self) -> ElectrodeNumber:
+    def get_selected_number_of_electrodes(self) -> int:
         pass
 
     @abstractmethod
@@ -33,7 +33,7 @@ class GuiInterface:
         pass
 
     @abstractmethod
-    def get_selected_injection_pattern(self) -> InjectionPattern:
+    def get_selected_injection_pattern(self) -> str:
         pass
 
     @abstractmethod
@@ -64,6 +64,14 @@ class GuiInterface:
 
     @abstractmethod
     def set_available_baudrates(self, baudrates: list[int]):
+        pass
+
+    @abstractmethod
+    def set_available_injection_patterns(self, patterns: list[str]):
+        pass
+
+    @abstractmethod
+    def set_available_electrode_numbers(self, electrode_numbers: list[int]):
         pass
 
     # plotting
@@ -202,6 +210,8 @@ class Sentinel:
             self._gui.set_meshtypes(self._registry.get_meshtypes())
             # self._gui.set_serial_ports(self._dataAcquirer.get_serial_ports())
             # self._gui.set_available_baudrates(self._dataAcquirer.get_available_baudrates())
+            self._gui.set_available_electrode_numbers([number for number in ElectrodeNumber])
+            self._gui.set_available_injection_patterns([pattern for pattern in InjectionPattern])
 
             while True:
                 # evaluate all flags

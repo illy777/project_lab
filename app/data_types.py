@@ -6,10 +6,10 @@
 # Descritpion: Data types for the EIT measurement system.
 
 
-from enum import StrEnum, Enum
+from enum import StrEnum, IntEnum
 
 
-class ElectrodeNumber(Enum):
+class ElectrodeNumber(IntEnum):
     EIGHT = 8
     SIXTEEN = 16
     THIRTY_TWO = 32

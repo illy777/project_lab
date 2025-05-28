@@ -16,7 +16,6 @@ from PyQt6.QtGui import QPainter, QPixmap
 from gui.heatmap_display import HeatmapDisplay
 from gui.voltage_plot import VoltagePlot
 from app.app import GuiInterface
-from app.data_types import *
 import numpy as np
 
 # Main application class
@@ -133,12 +132,10 @@ class Gui(QWidget,GuiInterface):
 
         sidebar.addWidget(QLabel("Number of Electrodes"))
         self.num_electrodes = QComboBox()
-        self.num_electrodes.addItems([str(e.value) for e in ElectrodeNumber])
         sidebar.addWidget(self.num_electrodes)
 
         sidebar.addWidget(QLabel("Injection Pattern"))
         self.pattern_select = QComboBox()
-        self.pattern_select.addItems([pattern.value for pattern in InjectionPattern])
         sidebar.addWidget(self.pattern_select)
 
         self.run_button = QPushButton("Start Visualization")
@@ -267,6 +264,14 @@ class Gui(QWidget,GuiInterface):
     
     def set_meshtypes(self, meshtypes: list[str]):
         self.mesh_type.addItems(meshtypes)
+
+    def set_available_injection_patterns(self, patterns: list[str]):
+        self.pattern_select.clear()
+        self.pattern_select.addItems(patterns)
+
+    def set_available_electrode_numbers(self, electrode_numbers: list[int]):
+        self.num_electrodes.clear()
+        self.num_electrodes.addItems([str(number) for number in electrode_numbers])
 
     def set_anomaly_position(self, anomaly_position: int):
         self.anomaly_position = anomaly_position
