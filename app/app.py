@@ -1,4 +1,4 @@
-# Copyright (c) 2025 
+# Copyright (c) 2025
 # SPDX-License-Identifier: MIT
 # Author: Thomas Harald Reinhard Rubin <thomas.rubin2@protonmail.com>
 # Author: Isaac Lucas de Lima Yuki <isaacyuki@hotmail.com>
@@ -9,19 +9,21 @@ import threading
 from abc import abstractmethod
 from abc import ABC
 import time
+from typing import Union
+
 from app.factory import Pipeline
 from app.data_types import *
 
 import numpy as np
 
-class GuiInterface:
+class GuiInterface(ABC):
     # getter for current selection in gui
     @abstractmethod
-    def get_selected_number_of_electrodes(self) -> int:
+    def get_selected_number_of_electrodes(self) -> Union[int, None]:
         pass
 
     @abstractmethod
-    def get_selected_h0(self) -> float:
+    def get_selected_h0(self) -> Union[float, None]:
         pass
 
     @abstractmethod
@@ -29,7 +31,7 @@ class GuiInterface:
         pass
 
     @abstractmethod
-    def get_selected_max_area(self) -> float:
+    def get_selected_max_area(self) -> Union[float, None]:
         pass
 
     @abstractmethod

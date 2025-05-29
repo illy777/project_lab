@@ -1,4 +1,4 @@
-# Copyright (c) 2025 
+# Copyright (c) 2025
 # SPDX-License-Identifier: MIT
 # Author: Ömer Faruk KANMAZ <kanmazomerfaruk@outlook.com>
 # Author: Thomas Harald Reinhard Rubin <thomas.rubin2@protonmail.com>
@@ -19,7 +19,7 @@ from app.app import GuiInterface
 import numpy as np
 
 # Main application class
-class Gui(QWidget,GuiInterface):
+class Gui(QWidget):
 
     def __init__(self):
         super().__init__()
@@ -125,7 +125,7 @@ class Gui(QWidget,GuiInterface):
                 self.area_input.hide()
                 self.h0_label.show()
                 self.h0_input.show()
-                
+
         self.mesh_type.currentIndexChanged.connect(on_mesh_type_changed)
         # Call once to set initial state
         on_mesh_type_changed(self.mesh_type.currentIndex())
@@ -197,7 +197,7 @@ class Gui(QWidget,GuiInterface):
                 self.visualization_thread.start()
         else:
             self.run_button.setText("Start Visualization")
-    
+
     def run_visualization(self):
         while True:
             if self.new_hatmap_data:
@@ -213,7 +213,7 @@ class Gui(QWidget,GuiInterface):
                 self.new_voltage_data = False
                 self.plot_canvas.show()
             time.sleep(0.1)  # Adjust sleep time as needed for performance
-                
+
     def handle_command(self):
         command = self.command_line.text().strip()
         if command.startswith("set "):
@@ -227,55 +227,55 @@ class Gui(QWidget,GuiInterface):
             self.log_message(f"[CMD] Unknown command: {command}")
         self.command_line.clear()
 
-    def log_message(self, msg):
-        timestamp = time.strftime("[%H:%M:%S]")
-        self.visual_output.append(f"{timestamp} {msg}")
-        self.visual_output.verticalScrollBar().setValue(self.visual_output.verticalScrollBar().maximum())
-    
-    def get_selected_number_of_electrodes(self):
-        return int(self.num_electrodes.currentText())
-    
-    def get_selected_h0(self):
-        try:
-            return float(self.h0_input.text())
-        except ValueError:
-            self.log_message("[ERROR] Invalid h0 value")
-            return None
-        
-    #Getters for parameters
-    def get_selected_mesh_type(self):
-        return self.mesh_type.currentText().lower()
-        
-    def get_selected_max_area(self):
-        try:
-            return float(self.area_input.text())
-        except ValueError:
-            self.log_message("[ERROR] Invalid max area value")
-            return None
-        
-    def get_selected_injection_pattern(self):
+    # Getters for parameters
+    def get_selected_number_of_electrodes(self) -> str:
+        return self.num_electrodes.currentText()
+
+    def get_selected_h0(self) -> str:
+        return self.h0_input.text()
+
+    def get_selected_mesh_type(self) -> str:
+        return self.mesh_type.currentText()
+
+    def get_selected_max_area(self) -> str:
+        return self.area_input.text()
+
+    def get_selected_injection_pattern(self) -> str:
         return self.pattern_select.currentText().lower()
-    
+
+    def get_selected_serial_port(self) -> str:
+        pass # ToDo implement this widget (drop down menu)
+
+    def get_baudrate(self) -> int:
+        pass # ToDo implement this widget (drop down menu)
+
+    # set callbacks
     def set_start_button_callback(self, callback: callable):
         self.run_button_callback = callback
 
     def set_close_callback(self, callback: callable):
         self.close_callback = callback
-    
+
+    # setters for drop down menus
     def set_meshtypes(self, meshtypes: list[str]):
+        self.mesh_type.clear()
         self.mesh_type.addItems(meshtypes)
+
+    def set_serial_ports(self, ports: list[str]):
+        pass # ToDo implement this widget (drop down menu)
+
+    def set_available_baudrates(self, baudrates: list[str]):
+        pass # ToDo implement this widget (drop down menu)
 
     def set_available_injection_patterns(self, patterns: list[str]):
         self.pattern_select.clear()
         self.pattern_select.addItems(patterns)
 
-    def set_available_electrode_numbers(self, electrode_numbers: list[int]):
+    def set_available_electrode_numbers(self, electrode_numbers: list[str]):
         self.num_electrodes.clear()
-        self.num_electrodes.addItems([str(number) for number in electrode_numbers])
+        self.num_electrodes.addItems(electrode_numbers)
 
-    def set_anomaly_position(self, anomaly_position: int):
-        self.anomaly_position = anomaly_position
-
+    # plotting
     def update_heat_map(self, data, el_position: int, mesh_object):
         with self.data_lock:
             self.ds = data
@@ -288,3 +288,11 @@ class Gui(QWidget,GuiInterface):
             self.voltages_V = voltages_V
             self.frequency_Hz = frequency_Hz
             self.new_voltage_data = True
+
+    def set_anomaly_position(self, anomaly_position: str):
+        self.anomaly_position = anomaly_position
+
+    def log_message(self, msg):
+        timestamp = time.strftime("[%H:%M:%S]")
+        self.visual_output.append(f"{timestamp} {msg}")
+        self.visual_output.verticalScrollBar().setValue(self.visual_output.verticalScrollBar().maximum())
