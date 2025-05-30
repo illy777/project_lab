@@ -92,7 +92,7 @@ class FileHandler(DataAcquirerInterface):
     def __init__(self, file_path: str):
         self.data = None
         self.file = self._read_file(file_path)
-        self.line_counter = 0
+        self._line_counter = 0
 
     def _read_file(self, file_path) -> list:
         with open(file_path, 'r') as file:
@@ -102,17 +102,17 @@ class FileHandler(DataAcquirerInterface):
     
     def _read_line(self) -> str:
         """Read a line from the file."""
-        line = self.file[self.line_counter]
-        self.line_counter += 1
-        if self.line_counter >= len(self.file):
-            self.line_counter = 0
+        line = self.file[self._line_counter]
+        self._line_counter += 1
+        if self._line_counter >= len(self.file):
+            self._line_counter = 0
         return line
 
     def connect(self):
         pass
 
     def disconnect(self):
-        pass
+        self._line_counter = 0
 
     def get_available_baudrates(self) -> list[int]:
         return []
