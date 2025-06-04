@@ -8,14 +8,13 @@
 
 import threading, time
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout,
+    QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QSizePolicy,
     QLabel, QComboBox, QSpinBox, QLineEdit, QTextEdit, QSplitter, QFrame
 )
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPainter, QPixmap
+from PyQt6.QtGui import QPainter, QPixmap, QIcon
 from gui.heatmap_display import HeatmapDisplay
 from gui.voltage_plot import VoltagePlot
-from app.app import GuiInterface
 import numpy as np
 
 # Main application class
@@ -36,6 +35,7 @@ class Gui(QWidget):
         self.anomaly_position = None
         self.new_hatmap_data = False
         self.new_voltage_data = False
+        self.last_logged_anomaly_position = None
 
         # daemon -> just terminate when program exits, will not continue to run in background
         self.visualization_thread = threading.Thread(target=self.run_visualization, daemon=True)
@@ -93,11 +93,19 @@ class Gui(QWidget):
         # Sidebar UI elements
         sidebar = QVBoxLayout()
         sidebar.setSpacing(20)  # Reduce vertical space between widgets
-        sidebar.setContentsMargins(50, 4, 4, 200)  # Reduce margins
+        sidebar.setContentsMargins(4, 4, 8, 200)  # Reduce margins
 
         sidebar.addWidget(QLabel("Mesh Type"))
         self.mesh_type = QComboBox()
         sidebar.addWidget(self.mesh_type)
+
+        sidebar.addWidget(QLabel("Serial Port"))
+        self.serial_ports = QComboBox()
+        sidebar.addWidget(self.serial_ports)
+
+        sidebar.addWidget(QLabel("Baudrate"))
+        self.baudrates = QComboBox()
+        sidebar.addWidget(self.baudrates)
 
          # Area input for Lung mesh type only
         self.area_label = QLabel("Max Area (Lung)")
@@ -140,6 +148,8 @@ class Gui(QWidget):
 
         self.run_button = QPushButton("Start Visualization")
         self.run_button.setCheckable(True)
+        self.run_button.setMinimumHeight(48)
+        self.run_button.setStyleSheet("font-size: 18px;")
         self.run_button.clicked.connect(self.toggle_visualization)
         sidebar.addWidget(self.run_button)
 
@@ -152,14 +162,18 @@ class Gui(QWidget):
 
         # Horizontal layout with heatmap and plot
         visual_row = QHBoxLayout()
+
         self.heatmap_display = HeatmapDisplay()
-        self.heatmap_display.setMinimumHeight(350)
-        self.heatmap_display.setMinimumWidth(350)
-        visual_row.addWidget(self.heatmap_display, stretch=2)
+        self.heatmap_display.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.heatmap_display.setMinimumSize(350, 350)
+        self.heatmap_display.setMaximumSize(500, 500)
+        visual_row.addWidget(self.heatmap_display, stretch=3)
+
         self.plot_canvas = VoltagePlot()
-        self.plot_canvas.setMinimumHeight(350)
-        self.plot_canvas.setMinimumWidth(350)
-        visual_row.addWidget(self.plot_canvas, stretch=2)
+        self.plot_canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.plot_canvas.setMinimumSize(350, 350)
+        self.plot_canvas.setMaximumSize(600, 500)
+        visual_row.addWidget(self.plot_canvas, stretch=3)
         main_area.addLayout(visual_row)
 
         # Anomaly detection log (make this area smaller in height)
@@ -181,7 +195,29 @@ class Gui(QWidget):
 
         splitter.addWidget(sidebar_widget)
         splitter.addWidget(main_widget)
-        main_layout.addWidget(splitter)
+
+        # Create a container layout for the toggle button and the splitter
+        container_layout = QVBoxLayout()
+        container_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Add the toggle button outside the sidebar, bottom left
+        self.toggle_sidebar_btn = QPushButton()
+        self.toggle_sidebar_btn.setText("☰")
+        self.toggle_sidebar_btn.setIcon(QIcon())  # Remove icon if set
+        self.toggle_sidebar_btn.setCheckable(True)
+        self.toggle_sidebar_btn.setChecked(True)
+        self.toggle_sidebar_btn.setFixedSize(32, 32)
+        self.toggle_sidebar_btn.clicked.connect(lambda: sidebar_widget.setVisible(self.toggle_sidebar_btn.isChecked()))
+
+        # Add a horizontal layout to keep the button bottom left
+        button_row = QHBoxLayout()
+        button_row.addWidget(self.toggle_sidebar_btn, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
+        button_row.addStretch()
+
+        container_layout.addLayout(button_row)
+        container_layout.addWidget(splitter)
+
+        main_layout.addLayout(container_layout)
 
     def toggle_visualization(self):
         self.run_button_callback(self.run_button.isChecked())
@@ -205,7 +241,11 @@ class Gui(QWidget):
                     self.heatmap_display.update_heatmap_opencv(self.ds, self.mesh_obj, self.el_pos)
                 self.new_hatmap_data = False
                 self.heatmap_display.show()
-                self.log_message(f"Anomaly Position: {self.anomaly_position}")
+
+                # Only log if anomaly_position changed
+                if self.anomaly_position != self.last_logged_anomaly_position:
+                    self.log_message(f"Anomaly Position: {self.anomaly_position}")
+                    self.last_logged_anomaly_position = self.anomaly_position
 
             if self.new_voltage_data:
                 with self.voltages_data_lock:
@@ -244,10 +284,10 @@ class Gui(QWidget):
         return self.pattern_select.currentText().lower()
 
     def get_selected_serial_port(self) -> str:
-        pass # ToDo implement this widget (drop down menu)
+        return self.serial_ports.currentText()
 
     def get_baudrate(self) -> int:
-        pass # ToDo implement this widget (drop down menu)
+        return int(self.baudrates.currentText()) if self.baudrates.currentText() else 0
 
     # set callbacks
     def set_start_button_callback(self, callback: callable):
@@ -259,16 +299,22 @@ class Gui(QWidget):
     # setters for drop down menus
     def set_meshtypes(self, meshtypes: list[str]):
         self.mesh_type.clear()
+        capitalized_meshtypes = [m.capitalize() for m in meshtypes]
+        meshtypes = sorted(capitalized_meshtypes, key=lambda x: x.lower())  # Sort alphabetically
         self.mesh_type.addItems(meshtypes)
 
     def set_serial_ports(self, ports: list[str]):
-        pass # ToDo implement this widget (drop down menu)
+        self.serial_ports.clear()
+        self.serial_ports.addItems(ports)
 
     def set_available_baudrates(self, baudrates: list[str]):
-        pass # ToDo implement this widget (drop down menu)
+        self.baudrates.clear()
+        self.baudrates.addItems(baudrates)
 
     def set_available_injection_patterns(self, patterns: list[str]):
         self.pattern_select.clear()
+        capitalized_patterns = [p.capitalize() for p in patterns]
+        patterns = sorted(capitalized_patterns, key=lambda x: x.lower())
         self.pattern_select.addItems(patterns)
 
     def set_available_electrode_numbers(self, electrode_numbers: list[str]):
@@ -295,4 +341,14 @@ class Gui(QWidget):
     def log_message(self, msg):
         timestamp = time.strftime("[%H:%M:%S]")
         self.visual_output.append(f"{timestamp} {msg}")
-        self.visual_output.verticalScrollBar().setValue(self.visual_output.verticalScrollBar().maximum())
+
+        # Limit log to last 100 lines
+        max_lines = 100
+        doc = self.visual_output.document()
+        while doc.blockCount() > max_lines:
+            cursor = self.visual_output.textCursor()
+            cursor.movePosition(cursor.Start)
+            cursor.select(cursor.LineUnderCursor)
+            cursor.removeSelectedText()
+            cursor.deleteChar()
+

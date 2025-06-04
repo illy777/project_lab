@@ -42,7 +42,7 @@ class VoltagePlot(FigureCanvas):
         # Show dimmed grid lines
         self.ax.grid(True, color='lime', alpha=0.15, linewidth=0.8)
 
-        self.ax.set_ylim(0, 5)
+        self.ax.set_ylim(0, 6)
         self.ax.set_xlim(0, 39)
         self.ax.set_xlabel("Time (sample index)")
         self.ax.set_ylabel("Voltage (V)")

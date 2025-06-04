@@ -39,6 +39,17 @@ class HeatmapDisplay(QLabel):
 
             fig, ax = plt.subplots(figsize=(3, 2.5), dpi=600)
             ax.cla()
+            ax.set_facecolor('black')
+            fig.patch.set_facecolor('black')
+            ax.tick_params(axis='x', colors='lime')
+            ax.tick_params(axis='y', colors='lime')
+            ax.xaxis.label.set_color('lime')
+            ax.yaxis.label.set_color('lime')
+            ax.title.set_color('lime')
+            ax.spines['bottom'].set_color('lime')
+            ax.spines['top'].set_color('lime')
+            ax.spines['right'].set_color('lime')
+            ax.spines['left'].set_color('lime')
             im = ax.tripcolor(x, y, tri, ds, cmap=plt.cm.viridis)
          
             cb = fig.colorbar(im, ax=ax)
