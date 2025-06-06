@@ -12,7 +12,8 @@ from PyQt6.QtWidgets import (
     QLabel, QComboBox, QSpinBox, QLineEdit, QTextEdit, QSplitter, QFrame
 )
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPainter, QPixmap, QIcon
+from PyQt6.QtGui import QPainter, QPixmap, QIcon,QTextCursor
+
 from gui.heatmap_display import HeatmapDisplay
 from gui.voltage_plot import VoltagePlot
 import numpy as np
@@ -342,13 +343,12 @@ class Gui(QWidget):
         timestamp = time.strftime("[%H:%M:%S]")
         self.visual_output.append(f"{timestamp} {msg}")
 
-        # Limit log to last 100 lines
+    # Limit log to last 100 lines
         max_lines = 100
         doc = self.visual_output.document()
         while doc.blockCount() > max_lines:
             cursor = self.visual_output.textCursor()
-            cursor.movePosition(cursor.Start)
-            cursor.select(cursor.LineUnderCursor)
+            cursor.movePosition(QTextCursor.MoveOperation.Start)
+            cursor.select(QTextCursor.SelectionType.LineUnderCursor)
             cursor.removeSelectedText()
             cursor.deleteChar()
-
