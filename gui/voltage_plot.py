@@ -43,6 +43,7 @@ class VoltagePlot(FigureCanvas):
         self.ax.grid(True, color='lime', alpha=0.15, linewidth=0.8)
 
         self.ax.set_ylim(0, 6)
+        self.ymax = 6
         self.ax.set_xlim(0, 39)
         self.ax.set_xlabel("Time (sample index)")
         self.ax.set_ylabel("Voltage (V)")
@@ -53,6 +54,11 @@ class VoltagePlot(FigureCanvas):
         voltages = np.array(voltages, dtype=float)
         if voltages.size == 0:
             raise ValueError("Input voltages must be a non-empty array or list.")
+        # Update the y-axis limit if necessary
+        max_voltage = np.max(voltages) + 1
+        if max_voltage > self.ymax:
+            self.ymax = max_voltage
+        self.ax.set_ylim(0, self.ymax)
         # Scroll the plot: shift left and append new value(s)
         n = len(voltages)
         if n > len(self.y_data):

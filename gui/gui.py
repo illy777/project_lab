@@ -6,7 +6,7 @@
 # Descritpion: This module is the main GUI for the application.
 ## It provides a user interface for the EIT system, allowing users to configure parameters, visualize data, and interact with the system.
 
-import threading, time
+import threading, time, os
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QSizePolicy,
     QLabel, QComboBox, QSpinBox, QLineEdit, QTextEdit, QSplitter, QFrame
@@ -71,8 +71,8 @@ class Gui(QWidget):
                 color: #00ffcc;
             }
         """)
-
-        self.background_pixmap = QPixmap("/Users/omerfarukkanmaz/Desktop/Uni/project_lab/project_lab/gui/background.png")
+        cwd = os.getcwd()
+        self.background_pixmap = QPixmap(cwd + "/gui/background.png")
         self.setup_ui()
 
     def closeEvent(self, event):
@@ -164,17 +164,19 @@ class Gui(QWidget):
         # Horizontal layout with heatmap and plot
         visual_row = QHBoxLayout()
 
+        #Todo: get current widget size and feed heatmap and plot with it
         self.heatmap_display = HeatmapDisplay()
         self.heatmap_display.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.heatmap_display.setMinimumSize(350, 350)
-        self.heatmap_display.setMaximumSize(500, 500)
-        visual_row.addWidget(self.heatmap_display, stretch=3)
+        self.heatmap_display.setMaximumSize(1200, 1200)
+        visual_row.addWidget(self.heatmap_display)
 
+        #Todo: get current widget size and feed voltage and plot with it
         self.plot_canvas = VoltagePlot()
         self.plot_canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.plot_canvas.setMinimumSize(350, 350)
-        self.plot_canvas.setMaximumSize(600, 500)
-        visual_row.addWidget(self.plot_canvas, stretch=3)
+        self.plot_canvas.setMaximumSize(1200, 1000)
+        visual_row.addWidget(self.plot_canvas)
         main_area.addLayout(visual_row)
 
         # Anomaly detection log (make this area smaller in height)
@@ -207,7 +209,7 @@ class Gui(QWidget):
         self.toggle_sidebar_btn.setIcon(QIcon())  # Remove icon if set
         self.toggle_sidebar_btn.setCheckable(True)
         self.toggle_sidebar_btn.setChecked(True)
-        self.toggle_sidebar_btn.setFixedSize(32, 32)
+        self.toggle_sidebar_btn.setFixedSize(20, 20)
         self.toggle_sidebar_btn.clicked.connect(lambda: sidebar_widget.setVisible(self.toggle_sidebar_btn.isChecked()))
 
         # Add a horizontal layout to keep the button bottom left
@@ -245,8 +247,8 @@ class Gui(QWidget):
 
                 # Only log if anomaly_position changed
                 if self.anomaly_position != self.last_logged_anomaly_position:
-                    self.log_message(f"Anomaly Position: {self.anomaly_position}")
                     self.last_logged_anomaly_position = self.anomaly_position
+                    self.log_message(f"Anomaly Position: {self.anomaly_position}")
 
             if self.new_voltage_data:
                 with self.voltages_data_lock:
