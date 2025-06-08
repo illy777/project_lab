@@ -164,14 +164,15 @@ class Gui(QWidget):
         # Horizontal layout with heatmap and plot
         visual_row = QHBoxLayout()
 
-        #Todo: get current widget size and feed heatmap and plot with it
+        #Todo: When resizing verical axis delays...
         self.heatmap_display = HeatmapDisplay()
         self.heatmap_display.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.heatmap_width = self.heatmap_display.width()
+        self.heatmap_height = self.heatmap_display.height()
         self.heatmap_display.setMinimumSize(350, 350)
         self.heatmap_display.setMaximumSize(1200, 1200)
         visual_row.addWidget(self.heatmap_display)
 
-        #Todo: get current widget size and feed voltage and plot with it
         self.plot_canvas = VoltagePlot()
         self.plot_canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.plot_canvas.setMinimumSize(350, 350)
@@ -202,6 +203,9 @@ class Gui(QWidget):
         # Create a container layout for the toggle button and the splitter
         container_layout = QVBoxLayout()
         container_layout.setContentsMargins(0, 0, 0, 0)
+        container_layout.addWidget(splitter)
+
+        main_layout.addLayout(container_layout)
 
         # Add the toggle button outside the sidebar, bottom left
         self.toggle_sidebar_btn = QPushButton()
@@ -211,16 +215,16 @@ class Gui(QWidget):
         self.toggle_sidebar_btn.setChecked(True)
         self.toggle_sidebar_btn.setFixedSize(20, 20)
         self.toggle_sidebar_btn.clicked.connect(lambda: sidebar_widget.setVisible(self.toggle_sidebar_btn.isChecked()))
+        # Toggle button using absolute positioning:
+        self.toggle_sidebar_btn.setParent(self)
+        self.toggle_sidebar_btn.move(10, self.height() - 30)  # Bottom left
+        self.toggle_sidebar_btn.show()
 
-        # Add a horizontal layout to keep the button bottom left
-        button_row = QHBoxLayout()
-        button_row.addWidget(self.toggle_sidebar_btn, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
-        button_row.addStretch()
-
-        container_layout.addLayout(button_row)
-        container_layout.addWidget(splitter)
-
-        main_layout.addLayout(container_layout)
+    # Keep the toggle button at the bottom left corner when resizing
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        btn_margin = 10
+        self.toggle_sidebar_btn.move(btn_margin, self.height() - self.toggle_sidebar_btn.height() - btn_margin)        
 
     def toggle_visualization(self):
         self.run_button_callback(self.run_button.isChecked())
@@ -241,7 +245,7 @@ class Gui(QWidget):
         while True:
             if self.new_hatmap_data:
                 with self.data_lock:
-                    self.heatmap_display.update_heatmap_opencv(self.ds, self.mesh_obj, self.el_pos)
+                    self.heatmap_display.update_heatmap_opencv(self.ds, self.mesh_obj, self.el_pos, self.heatmap_height, self.heatmap_width)
                 self.new_hatmap_data = False
                 self.heatmap_display.show()
 

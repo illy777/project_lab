@@ -75,12 +75,13 @@ class HeatmapDisplay(QLabel):
         self.setPixmap(pixmap.scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio))
         plt.close(fig)
     
-    def update_heatmap_opencv(self, ds=[], mesh_obj=None, el_pos=None):
+    def update_heatmap_opencv(self, ds=[], mesh_obj=None, el_pos=None, height=300, width=340):
         """
         Displays an EIT heatmap using OpenCV, with sophisticated color mapping and overlays.
         """
         # Set image size
-        img_h, img_w = 340, 300
+        img_h = height 
+        img_w = width
 
         # If no data, show a blank heatmap
         if mesh_obj is None or el_pos is None or len(ds) == 0:
@@ -123,11 +124,11 @@ class HeatmapDisplay(QLabel):
                 ])
                 cv2.polylines(img, [pts_tri], isClosed=True, color=(60,60,60), thickness=1, lineType=cv2.LINE_AA)
 
-            # Draw electrodes as red circles and label them
+            # Draw electrodes as green circles and label them
             for idx, e in enumerate(el_pos):
                 center = (int(x_norm[e]), int(y_norm[e]))
-                cv2.circle(img, center, 4, (10,200,50), -4)
-                cv2.putText(img, str(idx), (center[0]+4, center[1]-4), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1, cv2.LINE_AA)
+                cv2.circle(img, center, 5, (10,200,50), -1)
+                cv2.putText(img, str(idx), (center[0]+4, center[1]-4), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 1, cv2.LINE_AA)
 
             # Add a colorbar (horizontal, bottom of the plot)
             bar_w = img_w - 40

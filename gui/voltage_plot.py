@@ -61,7 +61,7 @@ class VoltagePlot(FigureCanvas):
         if max_voltage > self.ymax:
             self.ymax = max_voltage
         if min_voltage < self.ymin:
-            if min_voltage >= 0:
+            if min_voltage >= -1:
                 self.ymin = 0
             else:
                 self.ymin = min_voltage
