@@ -41,9 +41,10 @@ class VoltagePlot(FigureCanvas):
 
         # Show dimmed grid lines
         self.ax.grid(True, color='lime', alpha=0.15, linewidth=0.8)
-
-        self.ax.set_ylim(0, 6)
+        
         self.ymax = 6
+        self.ymin = 0
+        self.ax.set_ylim(self.ymin, self.ymax)
         self.ax.set_xlim(0, 39)
         self.ax.set_xlabel("Time (sample index)")
         self.ax.set_ylabel("Voltage (V)")
@@ -54,11 +55,18 @@ class VoltagePlot(FigureCanvas):
         voltages = np.array(voltages, dtype=float)
         if voltages.size == 0:
             raise ValueError("Input voltages must be a non-empty array or list.")
-        # Update the y-axis limit if necessary
+        # Update the y-axis limits if necessary
         max_voltage = np.max(voltages) + 1
+        min_voltage = np.min(voltages) - 1
         if max_voltage > self.ymax:
             self.ymax = max_voltage
-        self.ax.set_ylim(0, self.ymax)
+        if min_voltage < self.ymin:
+            if min_voltage >= 0:
+                self.ymin = 0
+            else:
+                self.ymin = min_voltage
+        self.ax.set_ylim(self.ymin, self.ymax)
+
         # Scroll the plot: shift left and append new value(s)
         n = len(voltages)
         if n > len(self.y_data):
