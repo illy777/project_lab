@@ -71,8 +71,8 @@ class Gui(QWidget):
                 color: #00ffcc;
             }
         """)
-        cwd = os.getcwd()
-        self.background_pixmap = QPixmap(cwd + "/gui/background.png")
+        # Load background image
+        self.background_pixmap = QPixmap(os.path.join(os.getcwd(), 'gui', 'background.png'))
         self.setup_ui()
 
     def closeEvent(self, event):
@@ -294,7 +294,7 @@ class Gui(QWidget):
         return self.serial_ports.currentText()
 
     def get_baudrate(self) -> int:
-        return int(self.baudrates.currentText()) if self.baudrates.currentText() else 0
+        return self.baudrates.currentText()
 
     # set callbacks
     def set_start_button_callback(self, callback: callable):
