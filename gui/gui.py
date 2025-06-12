@@ -261,19 +261,6 @@ class Gui(QWidget):
                 self.plot_canvas.show()
             time.sleep(0.1)  # Adjust sleep time as needed for performance
 
-    def handle_command(self):
-        command = self.command_line.text().strip()
-        if command.startswith("set "):
-            try:
-                key, value = command[4:].split("=")
-                getattr(self, f"{key}_input").setText(value)
-                self.log_message(f"[CMD] Set {key} to {value}")
-            except Exception:
-                self.log_message(f"[ERROR] Invalid command: {command}")
-        else:
-            self.log_message(f"[CMD] Unknown command: {command}")
-        self.command_line.clear()
-
     # Getters for parameters
     def get_selected_number_of_electrodes(self) -> str:
         return self.num_electrodes.currentText()
