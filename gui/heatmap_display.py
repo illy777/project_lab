@@ -39,6 +39,17 @@ class HeatmapDisplay(QLabel):
 
             fig, ax = plt.subplots(figsize=(3, 2.5), dpi=600)
             ax.cla()
+            ax.set_facecolor('black')
+            fig.patch.set_facecolor('black')
+            ax.tick_params(axis='x', colors='lime')
+            ax.tick_params(axis='y', colors='lime')
+            ax.xaxis.label.set_color('lime')
+            ax.yaxis.label.set_color('lime')
+            ax.title.set_color('lime')
+            ax.spines['bottom'].set_color('lime')
+            ax.spines['top'].set_color('lime')
+            ax.spines['right'].set_color('lime')
+            ax.spines['left'].set_color('lime')
             im = ax.tripcolor(x, y, tri, ds, cmap=plt.cm.viridis)
          
             cb = fig.colorbar(im, ax=ax)
@@ -64,12 +75,13 @@ class HeatmapDisplay(QLabel):
         self.setPixmap(pixmap.scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio))
         plt.close(fig)
     
-    def update_heatmap_opencv(self, ds=[], mesh_obj=None, el_pos=None):
+    def update_heatmap_opencv(self, ds=[], mesh_obj=None, el_pos=None, height=300, width=340):
         """
         Displays an EIT heatmap using OpenCV, with sophisticated color mapping and overlays.
         """
         # Set image size
-        img_h, img_w = 350, 350
+        img_h = height 
+        img_w = width
 
         # If no data, show a blank heatmap
         if mesh_obj is None or el_pos is None or len(ds) == 0:
@@ -83,7 +95,7 @@ class HeatmapDisplay(QLabel):
 
             # Normalize coordinates to fit image
             x_norm = (x - x.min()) / (x.max() - x.min()) * (img_w - 40) + 20
-            y_norm = (y - y.min()) / (y.max() - y.min()) * (img_h - 40) + 20
+            y_norm = (y - y.min()) / (y.max() - y.min()) * (img_h - 80) + 20  # -80 for two 40px padding, +20 offset
 
             # Create a blank image
             img = np.zeros((img_h, img_w, 3), dtype=np.uint8)
@@ -112,22 +124,24 @@ class HeatmapDisplay(QLabel):
                 ])
                 cv2.polylines(img, [pts_tri], isClosed=True, color=(60,60,60), thickness=1, lineType=cv2.LINE_AA)
 
-            # Draw electrodes as red circles and label them
+            # Draw electrodes as green circles and label them
             for idx, e in enumerate(el_pos):
                 center = (int(x_norm[e]), int(y_norm[e]))
-                cv2.circle(img, center, 7, (0,0,255), -1)
-                cv2.putText(img, str(idx), (center[0]+8, center[1]-8), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1, cv2.LINE_AA)
+                cv2.circle(img, center, 5, (10,200,50), -1)
+                cv2.putText(img, str(idx), (center[0]+4, center[1]-4), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 1, cv2.LINE_AA)
 
-            # Add a colorbar (vertical, right side)
-            bar_h = img_h - 40
-            bar_w = 10
-            colorbar = np.linspace(0, 255, bar_h).astype(np.uint8)[::-1]
-            colorbar_img = cv2.applyColorMap(colorbar.reshape(-1,1), colormap)
-            img[20:20+bar_h, img_w-30:img_w-30+bar_w] = colorbar_img
+            # Add a colorbar (horizontal, bottom of the plot)
+            bar_w = img_w - 40
+            bar_h = 8  # thinner colorbar
+            colorbar_y_start = img_h - 50
+            colorbar = np.linspace(0, 255, bar_w).astype(np.uint8)
+            colorbar_img = cv2.applyColorMap(colorbar.reshape(1, -1), colormap)
+            colorbar_img = cv2.resize(colorbar_img, (bar_w, bar_h), interpolation=cv2.INTER_LINEAR)
+            img[colorbar_y_start:colorbar_y_start+bar_h, 20:20+bar_w] = colorbar_img
 
-            # Add min/max text for colorbar
-            cv2.putText(img, f"{ds_norm.max():.2f}", (img_w-28, 30), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 1)
-            cv2.putText(img, f"{ds_norm.min():.2f}", (img_w-28, img_h-15), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 1)
+            # Colorbar min/max text (bottom left and right)
+            cv2.putText(img, f"{ds_norm.min():.1f}", (10, img_h-20), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.6, (255,255,255), 1)
+            cv2.putText(img, f"{ds_norm.max():.1f}", (img_w-50, img_h-20), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.6, (255,255,255), 1)
 
         # Convert to QImage and display
         qimg = QImage(img.data, img.shape[1], img.shape[0], img.strides[0], QImage.Format.Format_RGB888)
