@@ -43,7 +43,7 @@ class GuiInterface(ABC):
         pass
 
     @abstractmethod
-    def get_baudrate(self) -> int:
+    def get_selected_baudrate(self) -> Union[int | None]:
         pass
 
     # callbacks
@@ -172,6 +172,9 @@ class Sentinel:
 
     def _init_measurement(self):
         try:
+            self._dataAcquirer.set_serial_port(self._gui.get_selected_serial_port())
+            self._dataAcquirer.set_baudrate(self._gui.get_selected_baudrate())
+
             self._dataAcquirer.connect()
             self._connected = True
         except Exception as e:
@@ -210,8 +213,8 @@ class Sentinel:
         try:
             # fill all drop down menus in the gui with data
             self._gui.set_meshtypes(self._registry.get_meshtypes())
-            # self._gui.set_serial_ports(self._dataAcquirer.get_serial_ports())
-            # self._gui.set_available_baudrates(self._dataAcquirer.get_available_baudrates())
+            self._gui.set_serial_ports(self._dataAcquirer.get_serial_ports())
+            self._gui.set_available_baudrates(self._dataAcquirer.get_available_baudrates())
             self._gui.set_available_electrode_numbers([number for number in ElectrodeNumber])
             self._gui.set_available_injection_patterns([pattern for pattern in InjectionPattern])
 
