@@ -73,14 +73,14 @@ In order to add a new mesh type to the framework follow the instructions [here](
 The project is divided into three parts: backend, frontend and pipelines. The following tables gives an overview how
 these are structured.
 
-| Part | Folder | Description |
--------------------------------
-|Backend|app|Contains the backend thread, which fetches the voltage data, hands it over to the chosen pipeline and sends the result to the gui for visualisation.|
--------------------------------
-|Frontend|gui|Contains the gui classes for the frontend thread to display all widgets.|
--------------------------------
-|Pipelines|pipelines|Contains all classes and files for the mesh types needed to use the framework.|
--------------------------------
+| Part           | Folder        | Description                                                                                                                                             |
+|----------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Backend        | app           | Contains the backend thread, which fetches the voltage data, hands it over to the chosen pipeline and sends the result to the gui for visualisation.    |
+| -------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend       | gui           | Contains the gui classes for the frontend thread to display all widgets.                                                                                |
+| -------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pipelines      | pipelines     | Contains all classes and files for the mesh types needed to use the framework.                                                                          |
+| -------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
 Detailed instructions on how to use poetry can be found [here](https://python-poetry.org/docs/basic-usage/).
 
