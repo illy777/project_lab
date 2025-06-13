@@ -1,17 +1,17 @@
 # PyEIT Framework with GUI
 
 This project provides a framework with a graphical user interface for working with the PyEIT package. It's meant to be
-used with the modifications of the PyEIT package at the Technical University of Chemnitz (TUC). 
+used with the modifications of the PyEIT package at the Technical University of Chemnitz (TUC).
 
 ## Description
 
 The framework provides a registry file, where new meshes can be registered (lung mesh, forearm mesh, ...). The user has
 to implement a function, which processes the voltage data and returns the plotting data. Then this function has be
 registered with the mesh type in the registry. In the graphical user interface the new implemented mesh type is then
-listed and can be selected. 
+listed and can be selected.
 
-> [!NOTE] 
-> The application needs to restart, to recognize a new mesh type. 
+> [!NOTE]
+> The application needs to restart, to recognize a new mesh type.
 
 ## Getting Started
 
@@ -19,48 +19,46 @@ listed and can be selected.
 ```commandline
 git clone https://github.com/illy777/project_lab
 ```
-Or use your favorite graphical git tool to clone.
 
-### Install dependencies with poetry (recommended way)
+### Install dependencies with poetry
 
-1. First you have to install [poetry](https://python-poetry.org/). (you can find the instructions 
+1. At first poetry has to be installed [poetry](https://python-poetry.org/). (you can find the instructions
 [here](https://python-poetry.org/docs/#installing-with-pipx))
 
-2. If you're using Pycharm you can add a local interpreter and create a new environment. As shown in the image below you
-need to select poetry as the type. Furthermore, you have to select the right python version and if poetry is installed
-the path to the poetry executable should be selected automatically.
+2. If Pycharm is used, a new virtual environment needs to be created and added as the interpreter. As shown in the image
+below poetry needs to be selected as the type. Furthermore, the right python version has to be selected. The path to
+the poetry executable should be selected automatically.
 
 <img src="Docs/add_python_interpreter_poetry.PNG" alt="drawing" width="400">
 
 > [!TIP]
-> You can find the python version of the project in the pyproject.toml file.
+> The python version of the project can be found in the pyproject.toml file.
 
-3. After creation of the poetry environment pycharm should install als dependencies automatically from the 
+3. After creation of the poetry environment pycharm should install als dependencies automatically from the
 pyproject.toml file.
 
-4. If you want to use poetry from the console just change to the project root directory and type the following command.
+4. To install the dependencies from the console the following command can be used:
 
 ````commandline
 poetry install
 ````
 
-### Install dependencies manually (not recommended way)
+### Install dependencies manually
 
-You could install all the dependencies manually with pip. The dependencies are listed in the pyproject.toml file.
-At least you should use a virtual environment for better control of conflicting packages. If things don't work that way
-try to install the dependencies the recommended way [above](#install-dependencies-with-poetry-recommended-way).
+The dependencies from the pyproject.toml file can also be installed manually with pip. If dependency conflicts or other
+problems occur installation with poetry can be used as described [above](#install-dependencies-with-poetry).
 
 ### Running the project
 
-To start the program you need to run the *main.py* script in the root directory of the project. If you are using poetry
-you can use the following to run the program, when you are in the root directory of the project:
+To start the program the *main.py* script needs to be run in the root directory of the project. If poetry is used the
+following command can be used to run the script:
 
 ````commandline
 poetry run python .\main.py
 ````
 
-Otherwise, you can set up a run-configuration in pycharm or your favorite IDE to run the main.py file. If you've setup
-the poetry environment pycharm should use it automatically to run python.
+Otherwise, a run-configuration has to be setup in pycharm or any other IDE to run the main.py file. If you've set up
+the poetry environment, pycharm should use it automatically to run python.
 
 ## Dependencies
 
@@ -69,8 +67,7 @@ the poetry environment pycharm should use it automatically to run python.
 
 ## Development
 
-If you want to further develop the project you should use poetry for dependency management. You can find detailed
-instructions on how to use poetry [here](https://python-poetry.org/docs/basic-usage/). 
+For dependency management the project uses poetry. Detailed instructions on how to use poetry can be found [here](https://python-poetry.org/docs/basic-usage/).
 
 Quick overview (terminal):
 
@@ -79,14 +76,14 @@ Quick overview (terminal):
 poetry add <package-name>(optional verion restrictions)
 ````
 
-- To 'save' your dependence setup you have to lock it into the *poetry.lock* file. This can be done as following:
+- The dependency setup of the project is saved in the *poetry.lock* file. This can be done as following:
 ````commandline
 poetry lock
 ````
 
 > [!TIP]
-> You should commit the poetry.lock file into git. Because these locked dependencies are used for installation and makes
-> your setup reproducible.
+> The poetry.lock file should be committed into git. Because these locked dependencies are used for installation and
+> make the setup reproducible.
 
 ## Authors
 
