@@ -64,11 +64,9 @@ the poetry environment, pycharm should use it automatically to run python.
 - All dependencies are listed in [pyproject.toml](pyproject.toml)
 - The project focuses on running on windows, but linux or mac should also work.
 
-## Adding a new mesh type
+## Development
 
 In order to add a new mesh type to the framework follow the instructions [here](pipelines/README.md).
-
-## Development
 
 The project is divided into three parts: backend, frontend and pipelines. The following tables gives an overview how
 these are structured.
