@@ -6,6 +6,7 @@
 # Descritpion: This module contains a class for acquiring data from the serial port for this specific application.
 
 import serial
+import serial.tools.list_ports
 import numpy as np
 from app.app import DataAcquirerInterface
 from app.data_types import *
@@ -42,6 +43,8 @@ class SerialPort(DataAcquirerInterface):
         self.serialConnection = None
 
     def connect(self):
+        if self.serialConnection and self.serialConnection.is_open:
+            self.disconnect()
         self.serialConnection = serial.Serial(self.port, self.baudrate)
         self.serialConnection.write(bytes(1))
 
@@ -74,16 +77,10 @@ class SerialPort(DataAcquirerInterface):
     def set_serial_port(self, port: str):
         """Set the serial port to connect to."""
         self.port = port
-        if self.serialConnection and self.serialConnection.is_open:
-            self.disconnect()
-        self.connect()
     
     def set_baudrate(self, baudrate: int):
         """Set the baud rate for the serial connection."""
         self.baudrate = baudrate
-        if self.serialConnection and self.serialConnection.is_open:
-            self.disconnect()
-        self.connect()
 
     def __del__(self):
         self.disconnect()
