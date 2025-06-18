@@ -11,7 +11,6 @@ from gui.gui import Gui
 from gui.adapter import GuiAdapter
 from PyQt6.QtWidgets import QApplication
 import sys
-import threading
 from app.app import Sentinel
 
 
@@ -20,7 +19,7 @@ if __name__ == "__main__":
     # Example usage
     app = QApplication(sys.argv)
 
-    data_acquirer = FileHandler("simulation/simulation.txt")
+    data_acquirer = SerialPort(port='COM3', baudrate=115200)
     gui = Gui()
     registry = PipelineRegistry()
     pipeline_builder =  PipelineBuilder(registry)
