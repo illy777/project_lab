@@ -14,7 +14,7 @@ import numpy as np
 class VoltagePlot(FigureCanvas):
     def __init__(self, parent=None):
         # Set up the matplotlib figure and axis
-        fig = Figure(figsize=(5, 3), dpi=100, facecolor='black')
+        fig = Figure(figsize=(3, 3), dpi=100, facecolor='black')
         self.ax = fig.add_subplot(111)
         super().__init__(fig)
         self.setParent(parent)
@@ -29,25 +29,27 @@ class VoltagePlot(FigureCanvas):
         self.line, = self.ax.plot(self.x_data, self.y_data, 'g-')  # green line
 
         # Set axis and label colors to green
-        self.ax.tick_params(axis='x', colors='lime')
-        self.ax.tick_params(axis='y', colors='lime')
-        self.ax.xaxis.label.set_color('lime')
-        self.ax.yaxis.label.set_color('lime')
-        self.ax.title.set_color('lime')
-        self.ax.spines['bottom'].set_color('lime')
-        self.ax.spines['top'].set_color('lime')
-        self.ax.spines['right'].set_color('lime')
-        self.ax.spines['left'].set_color('lime')
+        self.ax.tick_params(axis='x', colors='#00ff99')
+        self.ax.tick_params(axis='y', colors='#00ff99')
+        self.ax.xaxis.label.set_color('#00ff99')
+        self.ax.yaxis.label.set_color('#00ff99')
+        self.ax.title.set_color('#00ff99')
+        self.ax.spines['bottom'].set_color('#00ff99')
+        self.ax.spines['top'].set_color('#00ff99')
+        self.ax.spines['right'].set_color('#00ff99')
+        self.ax.spines['left'].set_color('#00ff99')
 
         # Show dimmed grid lines
-        self.ax.grid(True, color='lime', alpha=0.15, linewidth=0.8)
+        self.ax.grid(True, color='lime', alpha=0.50, linewidth=0.9)
         
         self.ymax = 6
         self.ymin = 0
+        self.line.set_color('#00ff99')
+        self.line.set_linewidth(1.5)
         self.ax.set_ylim(self.ymin, self.ymax)
         self.ax.set_xlim(0, 39)
-        self.ax.set_xlabel("Time (sample index)")
-        self.ax.set_ylabel("Voltage (V)")
+        self.ax.set_xlabel("Time (sample index)", fontsize=18)
+        self.ax.set_ylabel("Voltage (V)", fontsize=18)
 
         self.paused = True  # Start in paused state
 

@@ -41,23 +41,26 @@ class Gui(QWidget):
         # daemon -> just terminate when program exits, will not continue to run in background
         self.visualization_thread = threading.Thread(target=self.run_visualization, daemon=True)
 
-        # Remove background-image from stylesheet, keep only colors for widgets
         self.setStyleSheet("""
             QWidget {
+                font-size: 12px;
                 background-color: #0b0f0f;
                 color: #00ff99;
                 font-family: Courier;
             }
             QLabel {
+                font-size: 20px;
                 color: #80ffc2;
                 background-color: #000000;
             }
             QComboBox, QSpinBox, QLineEdit {
+                font-size: 20px;
                 background-color: #000000;
                 border: 1px solid #00cc88;
                 color: #00ffcc;
             }
             QPushButton {
+                font-size: 16px;
                 background-color: #000000;
                 border: 1px solid #00ffaa;
                 color: #00ffcc;
@@ -66,6 +69,8 @@ class Gui(QWidget):
                 background-color: #005f5f;
             }
             QTextEdit {
+                font-size: 20px;
+                bold: true;
                 background-color: #000000;
                 border: 1px solid #00cc88;
                 color: #00ffcc;
@@ -94,7 +99,7 @@ class Gui(QWidget):
         # Sidebar UI elements
         sidebar = QVBoxLayout()
         sidebar.setSpacing(20)  # Reduce vertical space between widgets
-        sidebar.setContentsMargins(4, 4, 8, 200)  # Reduce margins
+        sidebar.setContentsMargins(4, 4, 8, 50)  # Reduce margins
 
         sidebar.addWidget(QLabel("Mesh Type"))
         self.mesh_type = QComboBox()
@@ -122,22 +127,7 @@ class Gui(QWidget):
         self.h0_input.setText("0.07")  # Set default value to 0.07
         sidebar.addWidget(self.h0_input)
 
-        # Show Max Area Lung and hide h0 input based on mesh type selection
-        def on_mesh_type_changed(index):
-            if self.mesh_type.currentText().lower() == "lung":
-                self.area_label.show()
-                self.area_input.show()
-                self.h0_label.hide()
-                self.h0_input.hide()
-            else:
-                self.area_label.hide()
-                self.area_input.hide()
-                self.h0_label.show()
-                self.h0_input.show()
-
-        self.mesh_type.currentIndexChanged.connect(on_mesh_type_changed)
-        # Call once to set initial state
-        on_mesh_type_changed(self.mesh_type.currentIndex())
+        
 
         sidebar.addWidget(QLabel("Number of Electrodes"))
         self.num_electrodes = QComboBox()
@@ -154,11 +144,47 @@ class Gui(QWidget):
         self.run_button.clicked.connect(self.toggle_visualization)
         sidebar.addWidget(self.run_button)
 
+        self.region_of_anomaly = QLabel()
+        anomaly_pixmap = QPixmap(os.path.join(os.getcwd(), 'gui', 'regions_of_anomaly.jpeg'))
+        self.region_of_anomaly.setPixmap(anomaly_pixmap.scaled(200, 200, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        self.region_of_anomaly.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.region_of_anomaly.hide()  # Hide by default, show when needed
+        sidebar.addWidget(self.region_of_anomaly)
+        self.anomaly_figure_label = QLabel("Reference for Regions of Anomaly")
+        self.anomaly_figure_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.anomaly_figure_label.setStyleSheet("font-size: 12px; color: #80ffc2; background-color: transparent;")
+        sidebar.addWidget(self.anomaly_figure_label)
+        self.anomaly_figure_label.hide()  # Hide by default, show when needed
+
+        # Show Max Area Lung and hide h0 input based on mesh type selection
+        def on_mesh_type_changed(index):
+            if self.mesh_type.currentText().lower() == "lung":
+                self.area_label.show()
+                self.area_input.show()
+                self.h0_label.hide()
+                self.h0_input.hide()
+            else:
+                self.area_label.hide()
+                self.area_input.hide()
+                self.h0_label.show()
+                self.h0_input.show()
+            
+            if self.mesh_type.currentText().lower() == "circular":
+                self.region_of_anomaly.show()
+                self.anomaly_figure_label.show()
+            else:
+                self.region_of_anomaly.hide()
+                self.anomaly_figure_label.hide()
+
+        self.mesh_type.currentIndexChanged.connect(on_mesh_type_changed)
+        # Call once to set initial state
+        on_mesh_type_changed(self.mesh_type.currentIndex())
+
         # Main area for visual output
         main_area = QVBoxLayout()
 
         title_label = QLabel("Visual Output")
-        title_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+        title_label.setStyleSheet("font-size: 24px; font-weight: bold;")
         main_area.addWidget(title_label)
 
         # Horizontal layout with heatmap and plot
@@ -170,19 +196,18 @@ class Gui(QWidget):
         self.heatmap_width = self.heatmap_display.width()
         self.heatmap_height = self.heatmap_display.height()
         self.heatmap_display.setMinimumSize(350, 350)
-        self.heatmap_display.setMaximumSize(1200, 1200)
+        self.heatmap_display.setMaximumSize(800, 700)
         visual_row.addWidget(self.heatmap_display)
 
         self.plot_canvas = VoltagePlot()
-        self.plot_canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.plot_canvas.setMinimumSize(350, 350)
-        self.plot_canvas.setMaximumSize(1200, 1000)
+        self.plot_canvas.setMaximumSize(700, 700)
         visual_row.addWidget(self.plot_canvas)
         main_area.addLayout(visual_row)
 
         # Anomaly detection log (make this area smaller in height)
         anomaly_label = QLabel("Anomaly Detection")
-        anomaly_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+        anomaly_label.setStyleSheet("font-size: 20px; font-weight: bold;")
         main_area.addWidget(anomaly_label)
 
         self.visual_output = QTextEdit()
@@ -194,6 +219,7 @@ class Gui(QWidget):
         splitter = QSplitter(Qt.Orientation.Horizontal)
         sidebar_widget = QWidget()
         sidebar_widget.setLayout(sidebar)
+        sidebar_widget.setMaximumWidth(280)
         main_widget = QWidget()
         main_widget.setLayout(main_area)
 
