@@ -14,14 +14,14 @@ import numpy as np
 class VoltagePlot(FigureCanvas):
     def __init__(self, parent=None):
         # Set up the matplotlib figure and axis
-        fig = Figure(figsize=(3, 3), dpi=100, facecolor='black')
+        fig = Figure(figsize=(3, 3), dpi=100, facecolor='#cccccc')
         self.ax = fig.add_subplot(111)
         super().__init__(fig)
         self.setParent(parent)
 
         # Set background color to black
-        self.ax.set_facecolor('black')
-        fig.patch.set_facecolor('black')
+        self.ax.set_facecolor('#cccccc')
+        fig.patch.set_facecolor('#cccccc')
 
         # Initialize plot data for 40 samples (Voltage vs. Time)
         self.x_data = np.arange(40)
@@ -29,22 +29,22 @@ class VoltagePlot(FigureCanvas):
         self.line, = self.ax.plot(self.x_data, self.y_data, 'g-')  # green line
 
         # Set axis and label colors to green
-        self.ax.tick_params(axis='x', colors='#00ff99')
-        self.ax.tick_params(axis='y', colors='#00ff99')
-        self.ax.xaxis.label.set_color('#00ff99')
-        self.ax.yaxis.label.set_color('#00ff99')
-        self.ax.title.set_color('#00ff99')
-        self.ax.spines['bottom'].set_color('#00ff99')
-        self.ax.spines['top'].set_color('#00ff99')
-        self.ax.spines['right'].set_color('#00ff99')
-        self.ax.spines['left'].set_color('#00ff99')
+        self.ax.tick_params(axis='x', colors='black')
+        self.ax.tick_params(axis='y', colors='black')
+        self.ax.xaxis.label.set_color('black')
+        self.ax.yaxis.label.set_color('black')
+        self.ax.title.set_color('black')
+        self.ax.spines['bottom'].set_color('black')
+        self.ax.spines['top'].set_color('black')
+        self.ax.spines['right'].set_color('black')
+        self.ax.spines['left'].set_color('black')
 
         # Show dimmed grid lines
-        self.ax.grid(True, color='lime', alpha=0.50, linewidth=0.9)
+        self.ax.grid(True, color='black', alpha=0.50, linewidth=0.9)
         
         self.ymax = 6
         self.ymin = 0
-        self.line.set_color('#00ff99')
+        self.line.set_color('black')
         self.line.set_linewidth(1.5)
         self.ax.set_ylim(self.ymin, self.ymax)
         self.ax.set_xlim(0, 39)
