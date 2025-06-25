@@ -280,7 +280,7 @@ class Gui(QWidget):
     def get_selected_serial_port(self) -> str:
         return self.serial_ports.currentText()
 
-    def get_baudrate(self) -> int:
+    def get_baudrate(self) -> str:
         return self.baudrates.currentText()
 
     # set callbacks

@@ -34,7 +34,7 @@ class GuiAdapter(GuiInterface):
     def get_selected_mesh_type(self) -> str:
         return self._gui.get_selected_mesh_type().lower()
 
-    def get_selected_max_area(self) -> float:
+    def get_selected_max_area(self) -> Union[float, None]:
         try:
             return float(self._gui.get_selected_max_area())
         except ValueError:
@@ -47,8 +47,11 @@ class GuiAdapter(GuiInterface):
     def get_selected_serial_port(self) -> str:
         return self._gui.get_selected_serial_port()
 
-    def get_baudrate(self) -> int:
-        pass
+    def get_selected_baudrate(self) -> Union[int | None]:
+        try:
+            return int(self._gui.get_baudrate())
+        except ValueError:
+            return None
 
     # callbacks
     def set_start_button_callback(self, callback: callable):
