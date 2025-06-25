@@ -103,7 +103,7 @@ class HeatmapDisplay(QLabel):
             # Draw triangles with color mapping
             ds_norm = np.array(ds)
             ds_norm = (ds_norm - ds_norm.min()) / (np.ptp(ds_norm) + 1e-8)  # Normalize to [0,1]
-            colormap = cv2.COLORMAP_VIRIDIS
+            colormap = cv2.COLORMAP_VIRIDIS 
 
             for i, t in enumerate(tri):
                 pts_tri = np.array([
