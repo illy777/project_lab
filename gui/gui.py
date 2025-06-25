@@ -200,7 +200,7 @@ class Gui(QWidget):
         visual_row.addWidget(self.heatmap_display)
 
         self.plot_canvas = VoltagePlot()
-        self.plot_canvas.setMinimumSize(350, 350)
+        self.plot_canvas.setMinimumSize(450, 450)
         self.plot_canvas.setMaximumSize(700, 700)
         visual_row.addWidget(self.plot_canvas)
         main_area.addLayout(visual_row)
