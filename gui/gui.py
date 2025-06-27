@@ -196,7 +196,7 @@ class Gui(QWidget):
         self.heatmap_width = self.heatmap_display.width()
         self.heatmap_height = self.heatmap_display.height()
         self.heatmap_display.setMinimumSize(350, 350)
-        self.heatmap_display.setMaximumSize(800, 700)
+        self.heatmap_display.setMaximumSize(800, 800)
         visual_row.addWidget(self.heatmap_display)
 
         self.plot_canvas = VoltagePlot()
