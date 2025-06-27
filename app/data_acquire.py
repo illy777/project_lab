@@ -10,7 +10,7 @@ import serial.tools.list_ports
 import numpy as np
 from app.app import DataAcquirerInterface
 from app.data_types import *
-
+import time
 class Parser():
 
     @staticmethod
@@ -46,7 +46,8 @@ class SerialPort(DataAcquirerInterface):
         if self.serialConnection and self.serialConnection.is_open:
             self.disconnect()
         self.serialConnection = serial.Serial(self.port, self.baudrate)
-        self.serialConnection.write(bytes(1))
+        time.sleep(0.1)  # wait for connection to stabilize
+        self.send_byte(1)
 
     def disconnect(self):
         if self.serialConnection and self.serialConnection.is_open:
@@ -55,12 +56,19 @@ class SerialPort(DataAcquirerInterface):
     def _read_data(self):
         """Read raw data string from serial until end marker is found."""
         dataStr = ""
-        self.serialConnection.write(bytes(1))
+        self.send_byte(1)
         while not ('\\r\\n' in dataStr):
             dataByte = self.serialConnection.read(self.serialConnection.inWaiting())
             if len(dataByte) > 0:
                 dataStr += str(dataByte).split("'")[1]
         return dataStr
+
+    def send_byte(self, data: bytes):
+        """Send bytes to the serial port."""
+        if self.serialConnection and self.serialConnection.is_open:
+            self.serialConnection.write(data)
+        else:
+            raise ConnectionError("Serial port is not connected.")
 
     def acquire_data(self) -> np.ndarray:
         data = self._read_data()
