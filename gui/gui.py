@@ -278,7 +278,7 @@ class Gui(QWidget):
                 # Only log if anomaly_position changed
                 if self.anomaly_position != self.last_logged_anomaly_position:
                     self.last_logged_anomaly_position = self.anomaly_position
-                    self.log_message(f"Anomaly Position: {self.anomaly_position}")
+                    self.log_message(f"Anomaly position: Region {self.anomaly_position}")
 
             if self.new_voltage_data:
                 with self.voltages_data_lock:
