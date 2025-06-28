@@ -44,26 +44,26 @@ class Gui(QWidget):
         self.setStyleSheet("""
             QWidget {
                 font-size: 12px;
-                background-color: #0b0f0f;
-                color: #00ff99;
+                background-color: #ffffff;
+                color: #000000;
                 font-family: Courier;
             }
             QLabel {
                 font-size: 20px;
-                color: #80ffc2;
-                background-color: #000000;
+                color: #000000;
+                background-color: #ffffff;
             }
             QComboBox, QSpinBox, QLineEdit {
                 font-size: 20px;
-                background-color: #000000;
-                border: 1px solid #00cc88;
-                color: #00ffcc;
+                background-color: #ffffff;
+                border: 1px solid #000000;
+                color: #000000;
             }
             QPushButton {
                 font-size: 16px;
-                background-color: #000000;
-                border: 1px solid #00ffaa;
-                color: #00ffcc;
+                background-color: #ffffff;
+                border: 1px solid #000000;
+                color: #000000;
             }
             QPushButton:hover {
                 background-color: #005f5f;
@@ -71,13 +71,12 @@ class Gui(QWidget):
             QTextEdit {
                 font-size: 20px;
                 bold: true;
-                background-color: #000000;
-                border: 1px solid #00cc88;
-                color: #00ffcc;
+                background-color: #ffffff;
+                border: 1px solid #000000;
+                color: #000000;
             }
         """)
-        # Load background image
-        self.background_pixmap = QPixmap(os.path.join(os.getcwd(), 'gui', 'background.png'))
+        
         self.setup_ui()
 
     def closeEvent(self, event):
@@ -85,13 +84,6 @@ class Gui(QWidget):
             raise RuntimeError("Close callback for backend is not set!")
         else:
             self.close_callback()
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        if not self.background_pixmap.isNull():
-            # Scale the pixmap to widget size
-            painter.drawPixmap(self.rect(), self.background_pixmap)
-        super().paintEvent(event)
 
     def setup_ui(self):
         main_layout = QHBoxLayout(self)
@@ -152,7 +144,7 @@ class Gui(QWidget):
         sidebar.addWidget(self.region_of_anomaly)
         self.anomaly_figure_label = QLabel("Reference for Regions of Anomaly")
         self.anomaly_figure_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.anomaly_figure_label.setStyleSheet("font-size: 12px; color: #80ffc2; background-color: transparent;")
+        self.anomaly_figure_label.setStyleSheet("font-size: 12px; color: #000000; background-color: transparent;")
         sidebar.addWidget(self.anomaly_figure_label)
         self.anomaly_figure_label.hide()  # Hide by default, show when needed
 
@@ -190,7 +182,7 @@ class Gui(QWidget):
         # Horizontal layout with heatmap and plot
         visual_row = QHBoxLayout()
 
-        #Todo: When resizing verical axis delays...
+        #Todo: When resizing horizontal axis delays...
         self.heatmap_display = HeatmapDisplay()
         self.heatmap_display.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.heatmap_width = self.heatmap_display.width()
@@ -200,6 +192,7 @@ class Gui(QWidget):
         visual_row.addWidget(self.heatmap_display)
 
         self.plot_canvas = VoltagePlot()
+        self.plot_canvas.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.plot_canvas.setMinimumSize(450, 450)
         self.plot_canvas.setMaximumSize(700, 700)
         visual_row.addWidget(self.plot_canvas)
@@ -212,8 +205,7 @@ class Gui(QWidget):
 
         self.visual_output = QTextEdit()
         self.visual_output.setReadOnly(True)
-        # Reduce the height of anomaly detection area
-        self.visual_output.setFixedHeight(200)  # Smaller height for anomaly detection log
+        self.visual_output.setFixedHeight(200) 
         main_area.addWidget(self.visual_output)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -362,7 +354,7 @@ class Gui(QWidget):
         timestamp = time.strftime("[%H:%M:%S]")
         self.visual_output.append(f"{timestamp} {msg}")
 
-    # Limit log to last 100 lines
+        # Limit log to last 100 lines
         max_lines = 100
         doc = self.visual_output.document()
         while doc.blockCount() > max_lines:
@@ -371,3 +363,6 @@ class Gui(QWidget):
             cursor.select(QTextCursor.SelectionType.LineUnderCursor)
             cursor.removeSelectedText()
             cursor.deleteChar()
+
+        # Auto-scroll to the last line
+        self.visual_output.moveCursor(QTextCursor.MoveOperation.End)

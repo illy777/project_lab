@@ -15,15 +15,13 @@ class HeatmapDisplay(QLabel):
     def __init__(self):
         super().__init__()
         self.setMinimumSize(350, 250)
-        self.setStyleSheet("border: 1px solid #00ff99;")
+        self.setStyleSheet("border: 1px solid #000000;")
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setText("EIT Heatmap")
         self.setScaledContents(True)
 
     def update_heatmap_matplot(self, ds=[], mesh_obj=None, el_pos=None):
-        """
-        Displays an EIT heatmap using the same logic as eitplot, with axis numbers.
-        """
+
         import matplotlib.pyplot as plt
 
         if mesh_obj is None or el_pos is None or len(ds) == 0:
@@ -39,17 +37,17 @@ class HeatmapDisplay(QLabel):
 
             fig, ax = plt.subplots(figsize=(3, 2.5), dpi=600)
             ax.cla()
-            ax.set_facecolor('black')
-            fig.patch.set_facecolor('black')
-            ax.tick_params(axis='x', colors='lime')
-            ax.tick_params(axis='y', colors='lime')
-            ax.xaxis.label.set_color('lime')
-            ax.yaxis.label.set_color('lime')
-            ax.title.set_color('lime')
-            ax.spines['bottom'].set_color('lime')
-            ax.spines['top'].set_color('lime')
-            ax.spines['right'].set_color('lime')
-            ax.spines['left'].set_color('lime')
+            ax.set_facecolor('white')
+            fig.patch.set_facecolor('white')
+            ax.tick_params(axis='x', colors='black')
+            ax.tick_params(axis='y', colors='black')
+            ax.xaxis.label.set_color('black')
+            ax.yaxis.label.set_color('black')
+            ax.title.set_color('black')
+            ax.spines['bottom'].set_color('black')
+            ax.spines['top'].set_color('black')
+            ax.spines['right'].set_color('black')
+            ax.spines['left'].set_color('black')
             im = ax.tripcolor(x, y, tri, ds, cmap=plt.cm.viridis)
          
             cb = fig.colorbar(im, ax=ax)
@@ -75,44 +73,23 @@ class HeatmapDisplay(QLabel):
         self.setPixmap(pixmap.scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio))
         plt.close(fig)
     
-    def update_heatmap_opencv(self, ds=[], mesh_obj=None, el_pos=None,
-                            height=300, width=340):
-        """
-        Displays an EIT heat-map in a QLabel using OpenCV + Qt.
-
-        Parameters
-        ----------
-        ds        : 1-D array-like, per-triangle data values
-        mesh_obj  : dict with keys "node" (N×2) & "element" (M×3)
-        el_pos    : sequence of node indices for electrode centres
-        height    : output image height in pixels
-        width     : output image width in pixels
-        """
-
-        # Image canvas
+    def update_heatmap_opencv(self, ds=[], mesh_obj=None, el_pos=None,height=300, width=340):
+ 
         img_h, img_w = height, width
 
-        # ------------------------------------------------------------------
-        # 1. NO DATA --> show placeholder
-        # ------------------------------------------------------------------
+        # if no data show placeholder
         if mesh_obj is None or el_pos is None or len(ds) == 0:
-            img = np.zeros((img_h, img_w, 3), dtype=np.uint8)
-            cv2.putText(img, "No Data",
-                        (img_w // 4, img_h // 2),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1,
-                        (0, 255, 128), 2, cv2.LINE_AA)
+            img = np.full((img_h, img_w, 3), 255, dtype=np.uint8)
+            cv2.putText(img, "No Data", (img_w // 4, img_h // 2), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
 
-        # ------------------------------------------------------------------
-        # 2. FULL RENDER
-        # ------------------------------------------------------------------
         else:
             pts = mesh_obj["node"]      # (N, 2)
             tri = mesh_obj["element"]   # (M, 3)
             x, y = pts[:, 0], pts[:, 1]
 
-            # ---------- coordinate normalisation ----------
-            left_pad, right_pad = 20, 20
-            top_pad, bottom_pad = 20, 60        # 40 px colour-bar + 20 px gap
+            # coordinate normalisation 
+            left_pad, right_pad = 30, 30
+            top_pad, bottom_pad = 30, 30
 
             draw_w = img_w - left_pad - right_pad
             draw_h = img_h - top_pad - bottom_pad
@@ -125,16 +102,16 @@ class HeatmapDisplay(QLabel):
             y_norm = draw_h - y_norm               # flip vertical axis
             y_norm += top_pad
 
-            # Blank RGB image
-            img = np.zeros((img_h, img_w, 3), dtype=np.uint8)
+            # Blank white RGB image
+            img = np.full((img_h, img_w, 3), 255, dtype=np.uint8)
 
-            # ---------- colour-map normalisation ----------
+            # Colour map normalisation
             ds_norm = np.asarray(ds, dtype=float)
             ds_norm = (ds_norm - ds_norm.min()) / (np.ptp(ds_norm) + 1e-8)
 
             colormap = cv2.COLORMAP_VIRIDIS
 
-            # ---------- paint each finite-element triangle ----------
+            # Paint each finite-element triangle 
             for i, t in enumerate(tri):
                 pts_tri = np.array([
                     [int(x_norm[t[0]]), int(y_norm[t[0]])],
@@ -148,50 +125,36 @@ class HeatmapDisplay(QLabel):
                 )[0, 0].tolist()
                 cv2.fillPoly(img, [pts_tri], color)
 
-            # ---------- optional triangle outlines ----------
+            # Draw triangle edges for clarity 
             for t in tri:
                 pts_tri = np.array([
                     [int(x_norm[t[0]]), int(y_norm[t[0]])],
                     [int(x_norm[t[1]]), int(y_norm[t[1]])],
                     [int(x_norm[t[2]]), int(y_norm[t[2]])]
                 ])
-                cv2.polylines(img, [pts_tri], isClosed=True,
-                            color=(60, 60, 60), thickness=1,
-                            lineType=cv2.LINE_AA)
+                cv2.polylines(img, [pts_tri], isClosed=True, color=(60, 60, 60), thickness=1, lineType=cv2.LINE_AA)
 
-            # ---------- electrodes ----------
+            # Draw electrodes as red circles and label them
             for idx, e in enumerate(el_pos):
-                centre = (int(x_norm[e]), int(y_norm[e]))
-                cv2.circle(img, centre, 5, (10, 200, 50), -1)
-                cv2.putText(img, str(idx),
-                            (centre[0] + 4, centre[1] - 4),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8,
-                            (255, 255, 255), 1, cv2.LINE_AA)
+                center = (int(x_norm[e]), int(y_norm[e]))
+                cv2.circle(img, center, 5, (255, 10, 10), -1)
+                cv2.putText(img, str(idx), (center[0] + 4, center[1] - 4),  cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 1, cv2.LINE_AA)
 
-            # ---------- horizontal colour-bar ----------
-            bar_w, bar_h = img_w - 40, 8
-            colorbar_y = img_h - 50            # 40 px bar + 10 px gap
+            #  Horizontal colourbar 
+            bar_w, bar_h = img_w - 40, 12
+            colorbar_y = img_h - 20            # 40 px bar + 10 px gap
             grad = np.linspace(0, 255, bar_w).astype(np.uint8)
             colorbar = cv2.applyColorMap(grad.reshape(1, -1), colormap)
             colorbar = cv2.resize(colorbar, (bar_w, bar_h),
                                 interpolation=cv2.INTER_LINEAR)
             img[colorbar_y:colorbar_y + bar_h, 20:20 + bar_w] = colorbar
 
-            # min / max labels
-            cv2.putText(img, f"{ds_norm.min():.1f}", (10, img_h - 20),
-                        cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.6,
-                        (255, 255, 255), 1)
-            cv2.putText(img, f"{ds_norm.max():.1f}", (img_w - 50, img_h - 20),
-                        cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 0.6,
-                        (255, 255, 255), 1)
+            # Colorbar min/max text (bottom left and right)
+            cv2.putText(img, f"{ds_norm.min():.1f}", (10, img_h-30), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 1, (0,0,0), 1)
+            cv2.putText(img, f"{ds_norm.max():.1f}", (img_w-60, img_h-30), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 1, (0,0,0), 1)
 
-        # ------------------------------------------------------------------
-        # 3. Push into the QLabel
-        # ------------------------------------------------------------------
-        qimg = QImage(img.data, img.shape[1], img.shape[0],
-                    img.strides[0], QImage.Format.Format_RGB888)
+
+        # Push into the QLabel
+        qimg = QImage(img.data, img.shape[1], img.shape[0], img.strides[0], QImage.Format.Format_RGB888)
         pixmap = QPixmap.fromImage(qimg)
-        self.setPixmap(
-            pixmap.scaled(self.width(), self.height(),
-                        Qt.AspectRatioMode.KeepAspectRatio)
-        )
+        self.setPixmap(pixmap.scaled(self.width(), self.height(), Qt.AspectRatioMode.KeepAspectRatio))
