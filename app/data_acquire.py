@@ -10,6 +10,9 @@ import serial.tools.list_ports
 import numpy as np
 from app.app import DataAcquirerInterface
 from app.data_types import *
+import time
+
+TIMEOUT_S = 5
 
 class Parser():
 
@@ -42,28 +45,40 @@ class SerialPort(DataAcquirerInterface):
         self.baudrate = baudrate
         self.serialConnection = None
 
-    def connect(self):
+    def connect(self, timeout:int):
         if self.serialConnection and self.serialConnection.is_open:
             self.disconnect()
-        self.serialConnection = serial.Serial(self.port, self.baudrate)
-        self.serialConnection.write(bytes(1))
+        self.serialConnection = serial.Serial(self.port, self.baudrate, timeout=timeout)
+        time.sleep(0.1)  # wait for connection to stabilize
+        self.send_byte(1)
 
     def disconnect(self):
         if self.serialConnection and self.serialConnection.is_open:
             self.serialConnection.close()
 
-    def _read_data(self):
-        """Read raw data string from serial until end marker is found."""
+    def _read_data(self, timeout=TIMEOUT_S):
+        """Read raw data string from serial until end marker is found or timeout occurs."""
         dataStr = ""
-        self.serialConnection.write(bytes(1))
-        while not ('\\r\\n' in dataStr):
+        self.send_byte(1)
+        kill = False
+        start_time = time.time()
+        while not ('\\r\\n' in dataStr) and not kill:
             dataByte = self.serialConnection.read(self.serialConnection.inWaiting())
             if len(dataByte) > 0:
                 dataStr += str(dataByte).split("'")[1]
+            if time.time() - start_time > timeout:
+                kill = True
         return dataStr
 
-    def acquire_data(self) -> np.ndarray:
-        data = self._read_data()
+    def send_byte(self, data: bytes):
+        """Send bytes to the serial port."""
+        if self.serialConnection and self.serialConnection.is_open:
+            self.serialConnection.write(data)
+        else:
+            raise ConnectionError("Serial port is not connected.")
+
+    def acquire_data(self,timeout:int) -> np.ndarray:
+        data = self._read_data(timeout=timeout)
         return Parser.parse_data(data)
 
     def get_available_baudrates(self) -> list[int]:
@@ -106,7 +121,7 @@ class FileHandler(DataAcquirerInterface):
             self._line_counter = 0
         return line
 
-    def connect(self):
+    def connect(self, timeout:int):
         pass
 
     def disconnect(self):
@@ -124,6 +139,6 @@ class FileHandler(DataAcquirerInterface):
     def set_baudrate(self, baudrate: int):
         pass
 
-    def acquire_data(self) -> np.ndarray:
+    def acquire_data(self,timeout:int) -> np.ndarray:
         data = self._read_line()
         return Parser.parse_data(data)

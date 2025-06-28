@@ -196,11 +196,11 @@ class Gui(QWidget):
         self.heatmap_width = self.heatmap_display.width()
         self.heatmap_height = self.heatmap_display.height()
         self.heatmap_display.setMinimumSize(350, 350)
-        self.heatmap_display.setMaximumSize(800, 700)
+        self.heatmap_display.setMaximumSize(800, 800)
         visual_row.addWidget(self.heatmap_display)
 
         self.plot_canvas = VoltagePlot()
-        self.plot_canvas.setMinimumSize(350, 350)
+        self.plot_canvas.setMinimumSize(450, 450)
         self.plot_canvas.setMaximumSize(700, 700)
         visual_row.addWidget(self.plot_canvas)
         main_area.addLayout(visual_row)
@@ -278,7 +278,7 @@ class Gui(QWidget):
                 # Only log if anomaly_position changed
                 if self.anomaly_position != self.last_logged_anomaly_position:
                     self.last_logged_anomaly_position = self.anomaly_position
-                    self.log_message(f"Anomaly Position: {self.anomaly_position}")
+                    self.log_message(f"Anomaly position: Region {self.anomaly_position}")
 
             if self.new_voltage_data:
                 with self.voltages_data_lock:

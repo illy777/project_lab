@@ -16,6 +16,8 @@ from app.data_types import *
 
 import numpy as np
 
+TIMEOUT_S = 5
+
 class GuiInterface(ABC):
     # getter for current selection in gui
     @abstractmethod
@@ -98,7 +100,7 @@ class GuiInterface(ABC):
 class DataAcquirerInterface(ABC):
 
     @abstractmethod
-    def connect(self):
+    def connect(self, timeout:int):
         """This method should be implemented in the derived class."""
         pass
     @abstractmethod
@@ -106,7 +108,7 @@ class DataAcquirerInterface(ABC):
         """This method should be implemented in the derived class."""
         pass
     @abstractmethod
-    def acquire_data(self) -> np.ndarray:
+    def acquire_data(self, timeout:int) -> np.ndarray:
         """This method should be implemented in the derived class."""
         pass
     @abstractmethod
@@ -151,15 +153,30 @@ class Sentinel:
 
         self._executing_measurement: bool = False
 
-        # don't be daemonic, so that python program can't be exited without this exiting this thread
+        # don't be daemonic, so that python program can't be exited without this exiting thread
         self._thread = threading.Thread(target=self.exec, name="backend")
         self._start_measurement = threading.Event()
         self._stop_measurement = threading.Event()
         self._close_event = threading.Event()
+        self._watchdog_event = threading.Event()
         self._thread.start()
+
+        # create a watchdog thread to monitor the backend thread
+        self._last_data_time = time.time()
+        self._watchdog_thread = threading.Thread(target=self._data_watchdog, name="watchdog", args=(TIMEOUT_S,))
+        self._watchdog_thread.start()
 
         self._gui.set_start_button_callback(self._start_button_callback)
         self._gui.set_close_callback(self._close_callback)
+
+    def _data_watchdog(self, timeout:int = 5):
+        """Checks periodically if new data is being received."""
+        while not self._close_event.is_set():
+            time.sleep(timeout)
+            if self._executing_measurement and self._connected:
+                if time.time() - self._last_data_time > timeout:
+                    self._gui.log_message("No data received for a while, stopping measurement. Please check the connection.")
+                    self._watchdog_event.set()
 
     def _start_button_callback(self, checked_state: bool):
         if checked_state: # button is checked now -> start everything
@@ -174,8 +191,7 @@ class Sentinel:
         try:
             self._dataAcquirer.set_serial_port(self._gui.get_selected_serial_port())
             self._dataAcquirer.set_baudrate(self._gui.get_selected_baudrate())
-
-            self._dataAcquirer.connect()
+            self._dataAcquirer.connect(TIMEOUT_S)
             self._connected = True
         except Exception as e:
             self._gui.log_message(f"Error connecting to data acquirer: {e}")
@@ -195,7 +211,7 @@ class Sentinel:
             raise RuntimeError("Pipeline is not set.")
         self._executing_measurement = True
 
-    def _reset_measurement(self):
+    def _end_measurement(self):
         self._disconnect_data_acquirer()
         self._executing_measurement = False
 
@@ -221,7 +237,6 @@ class Sentinel:
             while True:
                 # evaluate all flags
                 if self._close_event.is_set():
-                    self._close_event.clear()
                     self._disconnect_data_acquirer()
                     break # terminate thread
 
@@ -231,11 +246,16 @@ class Sentinel:
 
                 if self._stop_measurement.is_set():
                     self._stop_measurement.clear()
-                    self._reset_measurement()
+                    self._end_measurement()
+
+                if self._watchdog_event.is_set():
+                    self._watchdog_event.clear()
+                    self._gui.log_message("Watchdog triggered, stopping measurement.")
+                    self._end_measurement()
 
                 # execution of measurement
                 if self._executing_measurement and self._connected:
-                    voltages = self._dataAcquirer.acquire_data()
+                    voltages = self._dataAcquirer.acquire_data(timeout=TIMEOUT_S)
                     data = self._pipeline.evaluate_data(voltages)
 
                     self._gui.update_heat_map(data, self._pipeline.mesh.el_pos, self._pipeline.mesh.meshObject)
@@ -244,5 +264,7 @@ class Sentinel:
 
                     self._gui.set_anomaly_position(anomaly_position)
                 time.sleep(0.1)
+                self._last_data_time = time.time()
+
         except Exception as e:
             raise RuntimeError(f"Backend got unexpected exception: {e}")
