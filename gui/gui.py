@@ -94,7 +94,7 @@ class Gui(QWidget):
         # Sidebar Paramters
         paramters_layout = QVBoxLayout()
         paramters_layout.setSpacing(10)  #  vertical space between widgets
-        paramters_layout.setContentsMargins(4, 4, 1, 200)  # margins
+        paramters_layout.setContentsMargins(4, 4, 1, 300)  # side bar contents margins
 
         paramters_layout.addWidget(QLabel("Mesh Type"))
         self.mesh_type = QComboBox()
