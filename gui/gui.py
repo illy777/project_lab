@@ -90,8 +90,8 @@ class Gui(QWidget):
 
         # Sidebar UI elements
         sidebar = QVBoxLayout()
-        sidebar.setSpacing(20)  # Reduce vertical space between widgets
-        sidebar.setContentsMargins(4, 4, 8, 50)  # Reduce margins
+        sidebar.setSpacing(5)  #  vertical space between widgets
+        sidebar.setContentsMargins(4, 4, 1, 50)  # margins
 
         sidebar.addWidget(QLabel("Mesh Type"))
         self.mesh_type = QComboBox()
@@ -116,10 +116,8 @@ class Gui(QWidget):
         self.h0_label = QLabel("h0")
         sidebar.addWidget(self.h0_label)
         self.h0_input = QLineEdit()
-        self.h0_input.setText("0.07")  # Set default value to 0.07
+        self.h0_input.setText("0.07")  # default value 
         sidebar.addWidget(self.h0_input)
-
-        
 
         sidebar.addWidget(QLabel("Number of Electrodes"))
         self.num_electrodes = QComboBox()
@@ -128,14 +126,7 @@ class Gui(QWidget):
         sidebar.addWidget(QLabel("Injection Pattern"))
         self.pattern_select = QComboBox()
         sidebar.addWidget(self.pattern_select)
-
-        self.run_button = QPushButton("Start Visualization")
-        self.run_button.setCheckable(True)
-        self.run_button.setMinimumHeight(48)
-        self.run_button.setStyleSheet("font-size: 18px;")
-        self.run_button.clicked.connect(self.toggle_visualization)
-        sidebar.addWidget(self.run_button)
-
+        
         self.region_of_anomaly = QLabel()
         anomaly_pixmap = QPixmap(os.path.join(os.getcwd(), 'gui', 'regions_of_anomaly.jpeg'))
         self.region_of_anomaly.setPixmap(anomaly_pixmap.scaled(200, 200, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
@@ -147,6 +138,13 @@ class Gui(QWidget):
         self.anomaly_figure_label.setStyleSheet("font-size: 12px; color: #000000; background-color: transparent;")
         sidebar.addWidget(self.anomaly_figure_label)
         self.anomaly_figure_label.hide()  # Hide by default, show when needed
+
+        self.run_button = QPushButton("Start Visualization")
+        self.run_button.setCheckable(True)
+        self.run_button.setMinimumHeight(48)
+        self.run_button.setStyleSheet("font-size: 18px;")
+        self.run_button.clicked.connect(self.toggle_visualization)
+        sidebar.addWidget(self.run_button)
 
         # Show Max Area Lung and hide h0 input based on mesh type selection
         def on_mesh_type_changed(index):
@@ -175,6 +173,8 @@ class Gui(QWidget):
         # Main area for visual output
         main_area = QVBoxLayout()
 
+        
+
         title_label = QLabel("Visual Output")
         title_label.setStyleSheet("font-size: 24px; font-weight: bold;")
         main_area.addWidget(title_label)
@@ -199,7 +199,7 @@ class Gui(QWidget):
         main_area.addLayout(visual_row)
 
         # Anomaly detection log (make this area smaller in height)
-        anomaly_label = QLabel("Anomaly Detection")
+        anomaly_label = QLabel("Logger")
         anomaly_label.setStyleSheet("font-size: 20px; font-weight: bold;")
         main_area.addWidget(anomaly_label)
 
@@ -253,7 +253,7 @@ class Gui(QWidget):
                     Mesh: {self.mesh_type.currentText()}
                     h0: {self.h0_input.text()}
                     Number of Electrodes: {self.num_electrodes.currentText()}
-                    Pattern: {self.pattern_select.currentText()}""")
+                    Injection Pattern: {self.pattern_select.currentText()}""")
             if not self.visualization_thread.is_alive():
                 self.visualization_thread.start()
         else:
