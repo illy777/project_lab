@@ -20,7 +20,6 @@ import numpy as np
 
 # Main application class
 class Gui(QWidget):
-
     def __init__(self):
         super().__init__()
         self.setWindowTitle("PyEIT_Thorax GUI")
@@ -37,6 +36,8 @@ class Gui(QWidget):
         self.new_hatmap_data = False
         self.new_voltage_data = False
         self.last_logged_anomaly_position = None
+        self.setMinimumSize = (1300, 850)  # Set a maximum size for the GUI
+        self.setMaximumSize = (1800, 1200)
 
         # daemon -> just terminate when program exits, will not continue to run in background
         self.visualization_thread = threading.Thread(target=self.run_visualization, daemon=True)
@@ -50,6 +51,7 @@ class Gui(QWidget):
             }
             QLabel {
                 font-size: 20px;
+                font-weight: bold;
                 color: #000000;
                 background-color: #ffffff;
             }
@@ -70,7 +72,6 @@ class Gui(QWidget):
             }
             QTextEdit {
                 font-size: 20px;
-                bold: true;
                 background-color: #ffffff;
                 border: 1px solid #000000;
                 color: #000000;
@@ -88,63 +89,127 @@ class Gui(QWidget):
     def setup_ui(self):
         main_layout = QHBoxLayout(self)
 
-        # Sidebar UI elements
         sidebar = QVBoxLayout()
-        sidebar.setSpacing(5)  #  vertical space between widgets
-        sidebar.setContentsMargins(4, 4, 1, 50)  # margins
 
-        sidebar.addWidget(QLabel("Mesh Type"))
+        # Sidebar Paramters
+        paramters_layout = QVBoxLayout()
+        paramters_layout.setSpacing(10)  #  vertical space between widgets
+        paramters_layout.setContentsMargins(4, 4, 1, 200)  # margins
+
+        paramters_layout.addWidget(QLabel("Mesh Type"))
         self.mesh_type = QComboBox()
-        sidebar.addWidget(self.mesh_type)
+        paramters_layout.addWidget(self.mesh_type)
 
-        sidebar.addWidget(QLabel("Serial Port"))
+        self.splitter_sidebar = QSplitter(Qt.Orientation.Vertical)
+        paramters_layout.addWidget(self.splitter_sidebar)
+
+        paramters_layout.addWidget(QLabel("Serial Port"))
         self.serial_ports = QComboBox()
-        sidebar.addWidget(self.serial_ports)
+        paramters_layout.addWidget(self.serial_ports)
+        paramters_layout.addWidget(self.splitter_sidebar)
 
-        sidebar.addWidget(QLabel("Baudrate"))
+        paramters_layout.addWidget(QLabel("Baudrate"))
         self.baudrates = QComboBox()
-        sidebar.addWidget(self.baudrates)
+        paramters_layout.addWidget(self.baudrates)
+        paramters_layout.addWidget(self.splitter_sidebar)
 
          # Area input for Lung mesh type only
         self.area_label = QLabel("Max Area (Lung)")
         self.area_input = QLineEdit()
         self.area_label.hide()
         self.area_input.hide()
-        sidebar.addWidget(self.area_label)
-        sidebar.addWidget(self.area_input)
+        paramters_layout.addWidget(self.area_label)
+        paramters_layout.addWidget(self.area_input)
+        
 
         self.h0_label = QLabel("h0")
-        sidebar.addWidget(self.h0_label)
+        paramters_layout.addWidget(self.h0_label)
         self.h0_input = QLineEdit()
         self.h0_input.setText("0.07")  # default value 
-        sidebar.addWidget(self.h0_input)
+        paramters_layout.addWidget(self.h0_input)
+        paramters_layout.addWidget(self.splitter_sidebar)
 
-        sidebar.addWidget(QLabel("Number of Electrodes"))
+        paramters_layout.addWidget(QLabel("Number of Electrodes"))
         self.num_electrodes = QComboBox()
-        sidebar.addWidget(self.num_electrodes)
+        paramters_layout.addWidget(self.num_electrodes)
+        paramters_layout.addWidget(self.splitter_sidebar)
 
-        sidebar.addWidget(QLabel("Injection Pattern"))
+        paramters_layout.addWidget(QLabel("Injection Pattern"))
         self.pattern_select = QComboBox()
-        sidebar.addWidget(self.pattern_select)
-        
-        self.region_of_anomaly = QLabel()
-        anomaly_pixmap = QPixmap(os.path.join(os.getcwd(), 'gui', 'regions_of_anomaly.jpeg'))
-        self.region_of_anomaly.setPixmap(anomaly_pixmap.scaled(200, 200, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
-        self.region_of_anomaly.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.region_of_anomaly.hide()  # Hide by default, show when needed
-        sidebar.addWidget(self.region_of_anomaly)
-        self.anomaly_figure_label = QLabel("Reference for Regions of Anomaly")
-        self.anomaly_figure_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.anomaly_figure_label.setStyleSheet("font-size: 12px; color: #000000; background-color: transparent;")
-        sidebar.addWidget(self.anomaly_figure_label)
-        self.anomaly_figure_label.hide()  # Hide by default, show when needed
+        paramters_layout.addWidget(self.pattern_select)
+        paramters_layout.addWidget(self.splitter_sidebar)
+
+        sidebar.addLayout(paramters_layout)
+
+        # Sidebar run button layout
+        run_button_layout = QVBoxLayout()
 
         self.run_button = QPushButton("Start Visualization")
         self.run_button.setCheckable(True)
         self.run_button.setMinimumHeight(48)
         self.run_button.setStyleSheet("font-size: 18px;")
         self.run_button.clicked.connect(self.toggle_visualization)
-        sidebar.addWidget(self.run_button)
+        sidebar.addWidget(self.run_button, alignment=Qt.AlignmentFlag.AlignBottom)
+        sidebar.addLayout(run_button_layout)
+
+        # Main area for visual output
+        main_area = QVBoxLayout()
+
+        logo_label = QLabel()
+        logo_pixmap = QPixmap(os.path.join(os.getcwd(), 'gui', 'logo_mst.png'))
+        logo_label.setPixmap(logo_pixmap.scaled(120, 120, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        logo_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignRight)
+        main_area.addWidget(logo_label)
+
+        # Horizontal layout with heatmap and plot
+        visual_row = QHBoxLayout()
+
+        self.heatmap_display = HeatmapDisplay()
+        self.heatmap_display.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.heatmap_width = self.heatmap_display.width()
+        self.heatmap_height = self.heatmap_display.height()
+        self.heatmap_display.setMinimumSize(450, 450)
+        self.heatmap_display.setMaximumSize(800, 800)
+        visual_row.addWidget(self.heatmap_display)
+
+        self.plot_canvas = VoltagePlot()
+        self.plot_canvas.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.plot_canvas.setMinimumSize(450, 450)
+        self.plot_canvas.setMaximumSize(700, 700)
+        visual_row.addWidget(self.plot_canvas)
+        main_area.addLayout(visual_row)
+
+        logger = QLabel("Logger")
+        logger.setStyleSheet("font-size: 20px; font-weight: bold;")
+        main_area.addWidget(logger)
+        
+        # Layout for logger and reference region
+        container_layout_bottom = QHBoxLayout()
+
+        self.visual_output = QTextEdit()
+        self.visual_output.setReadOnly(True)
+        self.visual_output.setFixedHeight(200) 
+        self.visual_output.setMinimumWidth(400)  # Set a minimum height 
+        container_layout_bottom.addWidget(self.visual_output)
+
+        reference_region_layout = QVBoxLayout()
+
+        self.region_of_anomaly = QLabel()
+        anomaly_pixmap = QPixmap(os.path.join(os.getcwd(), 'gui', 'regions_of_anomaly.jpeg'))
+        self.region_of_anomaly.setPixmap(anomaly_pixmap.scaled(200, 200, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        self.region_of_anomaly.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.region_of_anomaly.hide()  # Hide by default, show when needed
+        reference_region_layout.addWidget(self.region_of_anomaly)
+
+        self.anomaly_figure_label = QLabel("Reference for Regions of Anomaly")
+        self.anomaly_figure_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.anomaly_figure_label.setStyleSheet("font-size: 12px; color: #000000; background-color: transparent;")
+        self.anomaly_figure_label.hide()  # Hide by default, show when needed
+
+        reference_region_layout.addWidget(self.anomaly_figure_label)
+        container_layout_bottom.addLayout(reference_region_layout)
+        
+        main_area.addLayout(container_layout_bottom)
 
         # Show Max Area Lung and hide h0 input based on mesh type selection
         def on_mesh_type_changed(index):
@@ -169,44 +234,6 @@ class Gui(QWidget):
         self.mesh_type.currentIndexChanged.connect(on_mesh_type_changed)
         # Call once to set initial state
         on_mesh_type_changed(self.mesh_type.currentIndex())
-
-        # Main area for visual output
-        main_area = QVBoxLayout()
-
-        
-
-        title_label = QLabel("Visual Output")
-        title_label.setStyleSheet("font-size: 24px; font-weight: bold;")
-        main_area.addWidget(title_label)
-
-        # Horizontal layout with heatmap and plot
-        visual_row = QHBoxLayout()
-
-        #Todo: When resizing horizontal axis delays...
-        self.heatmap_display = HeatmapDisplay()
-        self.heatmap_display.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.heatmap_width = self.heatmap_display.width()
-        self.heatmap_height = self.heatmap_display.height()
-        self.heatmap_display.setMinimumSize(350, 350)
-        self.heatmap_display.setMaximumSize(800, 800)
-        visual_row.addWidget(self.heatmap_display)
-
-        self.plot_canvas = VoltagePlot()
-        self.plot_canvas.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.plot_canvas.setMinimumSize(450, 450)
-        self.plot_canvas.setMaximumSize(700, 700)
-        visual_row.addWidget(self.plot_canvas)
-        main_area.addLayout(visual_row)
-
-        # Anomaly detection log (make this area smaller in height)
-        anomaly_label = QLabel("Logger")
-        anomaly_label.setStyleSheet("font-size: 20px; font-weight: bold;")
-        main_area.addWidget(anomaly_label)
-
-        self.visual_output = QTextEdit()
-        self.visual_output.setReadOnly(True)
-        self.visual_output.setFixedHeight(200) 
-        main_area.addWidget(self.visual_output)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         sidebar_widget = QWidget()
