@@ -149,6 +149,7 @@ class Gui(QWidget):
         self.run_button.setMinimumHeight(48)
         self.run_button.setStyleSheet("font-size: 18px;")
         self.run_button.clicked.connect(self.toggle_visualization)
+        run_button_layout.addWidget(self.splitter_sidebar)
         sidebar.addWidget(self.run_button, alignment=Qt.AlignmentFlag.AlignBottom)
         sidebar.addLayout(run_button_layout)
 
