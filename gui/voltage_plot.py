@@ -14,14 +14,14 @@ import numpy as np
 class VoltagePlot(FigureCanvas):
     def __init__(self, parent=None):
         # Set up the matplotlib figure and axis
-        fig = Figure(figsize=(3, 3), dpi=100, facecolor='#cccccc')
+        fig = Figure(figsize=(3, 3), dpi=100, facecolor='#ffffff')
         self.ax = fig.add_subplot(111)
         super().__init__(fig)
         self.setParent(parent)
 
         # Set background color to black
-        self.ax.set_facecolor('#cccccc')
-        fig.patch.set_facecolor('#cccccc')
+        self.ax.set_facecolor('#ffffff')
+        fig.patch.set_facecolor('#ffffff')
 
         # Initialize plot data for 40 samples (Voltage vs. Time)
         self.x_data = np.arange(40)
@@ -45,7 +45,7 @@ class VoltagePlot(FigureCanvas):
         self.ymax = 6
         self.ymin = 0
         self.line.set_color('black')
-        self.line.set_linewidth(1.5)
+        self.line.set_linewidth(2)
         self.ax.set_ylim(self.ymin, self.ymax)
         self.ax.set_xlim(0, 39)
         self.ax.set_xlabel("Time (sample index)", fontsize=18)

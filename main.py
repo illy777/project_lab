@@ -23,7 +23,7 @@ if __name__ == "__main__":
     gui = Gui()
     registry = PipelineRegistry()
     pipeline_builder =  PipelineBuilder(registry)
-    gui.showMaximized()
+    gui.resize(1800, 1100)  
     gui.show()
     gui_adapter = GuiAdapter(gui)
 
